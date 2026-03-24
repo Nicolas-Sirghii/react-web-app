@@ -1,0 +1,36 @@
+# Redirect www → root
+www.easyretain.online {
+    redir https://sirghiinicolai.com{uri}
+}
+
+# MAIN SITE
+easyretain.online {
+    root * /usr/share/caddy/dist
+
+    route {
+        handle_path /api/* {
+            reverse_proxy backend:8000
+        }
+
+        handle {
+            try_files {path} {path}/ /index.html
+            file_server
+        }
+    }
+}
+
+# ADMIN SUBDOMAIN
+admin33.easyretain.online {
+    root * /usr/share/caddy-admin/dist
+
+    route {
+        handle_path /api/* {
+            reverse_proxy backend:8000
+        }
+
+        handle {
+            try_files {path} {path}/ /index.html
+            file_server
+        }
+    }
+}

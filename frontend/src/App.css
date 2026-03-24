@@ -1,0 +1,10 @@
+
+img{
+  width: 50%;
+}
+#images{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}

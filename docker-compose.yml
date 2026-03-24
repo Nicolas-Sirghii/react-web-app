@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: messages_db
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    restart: always
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    restart: always
+
+  frontend:
+    image: caddy:2
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/usr/share/caddy
+      - ./frontend-admin:/usr/share/caddy-admin
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
