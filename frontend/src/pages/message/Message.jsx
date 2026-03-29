@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState,  } from "react";
 
 export function Message() {
+ // const host = "http://127.0.0.1:8000"
+  const host = "/api"
+  
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +25,7 @@ export function Message() {
 
         if (!token) return navigate("/login");
 
-        const response = await fetch("http://127.0.0.1:8000/message", {
+        const response = await fetch(`${host}/message`, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
@@ -51,7 +54,7 @@ export function Message() {
         const token = localStorage.getItem("jwt");
         if (!token) return navigate("/login");
 
-        const response = await fetch("http://127.0.0.1:8000/all-images", {
+        const response = await fetch(`${host}/all-images`, {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
