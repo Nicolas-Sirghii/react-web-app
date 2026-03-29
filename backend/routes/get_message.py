@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Depends, Header
-from pydantic import constr
-
-from credentials import mySqlConnection, aut
+from fastapi import APIRouter, Depends
+from credentials import mySqlConnection
 from credentials import get_current_user
 
 message = APIRouter()
