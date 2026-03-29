@@ -4,6 +4,8 @@ import "./Login.css"; // reuse same styles + popup
 
 export function Register() {
   const navigate = useNavigate();
+  // const host = "http://127.0.0.1:8000"
+  const host = "/api"
 
   const [form, setForm] = useState({
     username: "",
@@ -23,7 +25,7 @@ export function Register() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/register", {
+      const response = await fetch(`${host}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

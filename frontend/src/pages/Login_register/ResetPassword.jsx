@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./Login.css";
 
 export function ForgotPassword() {
+   // const host = "http://127.0.0.1:8000"
+  const host = "/api"
   const [step, setStep] = useState(1);
 
   const [email, setEmail] = useState("");
@@ -17,7 +19,7 @@ export function ForgotPassword() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/send-code", {
+      const response = await fetch(`${host}/send-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +51,7 @@ export function ForgotPassword() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/reset-password", {
+      const response = await fetch(`${host}/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

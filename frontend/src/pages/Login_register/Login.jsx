@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function Login() {
+  // const host = "http://127.0.0.1:8000"
+  const host = "/api"
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -21,7 +23,7 @@ export function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/login", {
+      const response = await fetch(`${host}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
