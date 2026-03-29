@@ -3,3 +3,4 @@ uvicorn
 mysql-connector-python
 boto3
 python-multipart
+PyJWT
