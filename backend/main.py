@@ -9,6 +9,8 @@ from routes.update_message import update_message_route
 from routes.delete_file import delete_file_route
 from routes.list_images import list_images_route
 from routes.all_images import all_images_route
+from routes.send_code import send_code_router
+from routes.reset_password import reset_router
 app = FastAPI()
 
 app.add_middleware(
@@ -26,3 +28,5 @@ app.include_router(update_message_route)
 app.include_router(delete_file_route)
 app.include_router(list_images_route)
 app.include_router(all_images_route)
+app.include_router(send_code_router)
+app.include_router(reset_router)

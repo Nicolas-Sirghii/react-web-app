@@ -1,9 +1,7 @@
-# Redirect www → root
 www.easyretain.online {
-    redir https://sirghiinicolai.com{uri}
+    redir https://easyretain.online{uri} permanent
 }
 
-# MAIN SITE
 easyretain.online {
     root * /usr/share/caddy/dist
 
@@ -19,8 +17,7 @@ easyretain.online {
     }
 }
 
-# ADMIN SUBDOMAIN
-admin33.easyretain.online {
+admin.easyretain.online {
     root * /usr/share/caddy-admin/dist
 
     route {

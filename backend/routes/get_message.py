@@ -1,10 +1,16 @@
-from fastapi import APIRouter
-from credentials import awsS3Connection, awsBucketName
+from fastapi import APIRouter, Depends, Header
+from pydantic import constr
+
+from credentials import mySqlConnection, aut
+from credentials import get_current_user
 
 message = APIRouter()
 
 @message.get("/message")
-async def get_message():
+async def get_message(current_user: int = Depends(get_current_user)):
+
+    print(current_user)
+
     connection = mySqlConnection()
     cursor = connection.cursor()
     cursor.execute("SELECT text FROM messages where id=1;")
@@ -12,9 +18,7 @@ async def get_message():
     cursor.close()
     connection.close()
 
-    return {
-        "text": result[0] if result else "",
-    }
+    return {"message": f"Hello user {current_user}, you are authenticated!", "text": result[0]}
 
 
 
