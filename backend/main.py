@@ -16,9 +16,9 @@ from routes.list_images import list_images_route
 from routes.all_images import all_images_route
 from frontend_routes.authentication.email_verification import sendCode
 from frontend_routes.authentication.email_verification import verifyEmail
-from credentials import get_current_active_user
 
-print(get_current_active_user)
+
+
 
 app = FastAPI()
 
