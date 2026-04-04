@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css"; // reuse same styles + popup
+import { useSelector } from "react-redux";
+import "./Login.css";
 
 export function Register() {
+  const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path
   const navigate = useNavigate();
-  // const host = "http://127.0.0.1:8000"
-  const host = "/api"
 
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
+    confirmPassword: "", // ✅ NEW
   });
 
   const [message, setMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [isError, setIsError] = useState(false);
+
+  // ✅ show password toggle
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,28 +29,37 @@ export function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ❗ check passwords match
+    if (form.password !== form.confirmPassword) {
+      setIsError(true);
+      setMessage("Passwords do not match");
+      setShowPopup(true);
+      return;
+    }
+
     try {
       const response = await fetch(`${host}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }), // ✅ don't send confirmPassword
       });
 
       const data = await response.json();
 
-      // ❗ handle backend errors
       if (!response.ok) {
         throw new Error(data.detail || "Registration failed");
       }
 
-      // ✅ success
       setIsError(false);
       setMessage("Account created successfully!");
       setShowPopup(true);
 
-      // optional: redirect after short delay
       setTimeout(() => {
         navigate("/login");
       }, 1500);
@@ -77,13 +91,33 @@ export function Register() {
           required
         />
 
+        {/* 🔑 PASSWORD */}
         <input
           name="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Password"
           onChange={handleChange}
           required
         />
+
+        {/* 🔑 CONFIRM PASSWORD */}
+        <input
+          name="confirmPassword"
+          type={showPassword ? "text" : "password"}
+          placeholder="Confirm Password"
+          onChange={handleChange}
+          required
+        />
+
+        {/* 👁 TOGGLE */}
+        <label className="show-password">
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={() => setShowPassword(!showPassword)}
+          />
+          Show Passwords
+        </label>
 
         <button type="submit">Create Account</button>
 
@@ -92,7 +126,6 @@ export function Register() {
         </p>
       </form>
 
-      {/* 🔴 Popup */}
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup">

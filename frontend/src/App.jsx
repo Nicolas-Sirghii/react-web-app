@@ -7,6 +7,7 @@ import { Login } from './pages/Login_register/Login'
 import { ForgotPassword } from './pages/Login_register/ResetPassword'
 import { Header } from './pages/Header/Header'
 import { Message } from './pages/message/Message'
+import { UserImages } from './pages/getImages/GetImages'
 
 function App() {
   
@@ -19,6 +20,7 @@ function App() {
          <Route path='/login' element={<Login />} />
          <Route path='/forgot-password' element={<ForgotPassword />} />
          <Route path='/message' element={<Message />} />
+         <Route path='/userimages' element={<UserImages />} />
       </Routes>
     </div>
   )

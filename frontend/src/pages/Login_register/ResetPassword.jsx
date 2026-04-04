@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import "./Login.css";
 
 export function ForgotPassword() {
-   // const host = "http://127.0.0.1:8000"
-  const host = "/api"
+  const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path
+ 
   const [step, setStep] = useState(1);
 
   const [email, setEmail] = useState("");

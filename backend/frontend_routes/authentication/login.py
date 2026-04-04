@@ -23,7 +23,7 @@ async def loginUser(request: Request):
     )
 
     answer = cursor.fetchone()
-    print(answer)
+
     if answer:
         stored_password, salt, user_id, username = answer
 
@@ -37,7 +37,7 @@ async def loginUser(request: Request):
 
             token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
-            return {"token": token, "username": username}
+            return {"token": token, "username": username, "user_id": user_id}
 
     return {"token": "Invalid Credentials"}
 

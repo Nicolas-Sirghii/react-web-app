@@ -1,10 +1,11 @@
 import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export function Login() {
-  // const host = "http://127.0.0.1:8000"
-  const host = "/api"
+  const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path;
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -14,6 +15,10 @@ export function Login() {
 
   const [error, setError] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // 🔥 loading state
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,6 +26,8 @@ export function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true);
 
     try {
       const response = await fetch(`${host}/login`, {
@@ -33,20 +40,20 @@ export function Login() {
 
       const data = await response.json();
 
-      // ❗ handle invalid credentials
       if (!data.token || data.token === "Invalid Credentials") {
         throw new Error("Invalid email or password");
       }
 
-      // ✅ success
       localStorage.setItem("jwt", data.token);
       localStorage.setItem("username", data.username);
+      localStorage.setItem("user_id", data.user_id);
 
       navigate("/message");
-
     } catch (err) {
       setError(err.message);
       setShowPopup(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,17 +68,35 @@ export function Login() {
           placeholder="Email"
           onChange={handleChange}
           required
+          disabled={loading}
         />
 
         <input
           name="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Password"
           onChange={handleChange}
           required
+          disabled={loading}
         />
 
-        <button type="submit">Login</button>
+        <label className="show-password">
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={() => setShowPassword(!showPassword)}
+            disabled={loading}
+          />
+          Show Password
+        </label>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={loading ? "skeleton skeleton-button" : ""}
+        >
+          {loading ? "" : "Login"}
+        </button>
 
         <p className="link">
           <a href="/forgot-password">Forgot Password?</a>
@@ -82,7 +107,6 @@ export function Login() {
         </p>
       </form>
 
-      {/* 🔴 POPUP */}
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup">
@@ -95,4 +119,3 @@ export function Login() {
     </div>
   );
 }
-

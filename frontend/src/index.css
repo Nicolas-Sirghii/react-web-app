@@ -12,6 +12,20 @@ body {
       align-items: center;
     }
 
+.api{
+  width: fit-content;
+  padding-left: 10px;
+  padding-right: 10px;
+  height: 50px;
+  position: absolute;
+  top: 50px;
+  right: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 
 
 

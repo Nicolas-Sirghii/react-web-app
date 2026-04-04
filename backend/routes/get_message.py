@@ -40,7 +40,7 @@ async def get_message(current_user: int = Depends(get_current_user)):
     cursor.close()
     connection.close()
 
-    return {"message": f"Hello user {current_user}, you are authenticated!", "text": result[0]}
+    return {"message": f"Hello user {current_user}, you are authenticated!", "text": result[0], "user_id": current_user}
 
 
 

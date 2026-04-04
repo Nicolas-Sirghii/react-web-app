@@ -1,0 +1,78 @@
+.user-images-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 10px;
+}
+
+/* Grid layout */
+.user-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+/* Image cards */
+.user-image-card {
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 15px #00f0ff33;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.user-image-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.user-image-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 25px #00f0ff55;
+}
+
+/* No images / error messages */
+.no-images,
+.error {
+  text-align: center;
+  font-size: 16px;
+  color: #ff00ff;
+  margin-top: 20px;
+}
+
+/* 🔴 Skeletons */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.skeleton-card {
+  background: #1a1a2e;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 150px;
+  position: relative;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  height: 100%;
+  width: 150%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 240, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 150%;
+  }
+}

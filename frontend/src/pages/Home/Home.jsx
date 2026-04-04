@@ -3,8 +3,10 @@ import { useState } from "react";
 
 export function Home() {
  
+ 
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
+  
 
   
 
@@ -20,10 +22,13 @@ export function Home() {
     setTasks(updated);
   };
 
+ 
+
 
 
   return (
     <div className="home-container">
+      
     
       {/* MAIN CONTENT */}
       <div className="home-content">

@@ -107,3 +107,68 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/* 🧊 SKELETON BASE */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #1a1a2e;
+  border-radius: 6px;
+}
+
+/* ✨ shimmer animation */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  height: 100%;
+  width: 150%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 240, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 150%;
+  }
+}
+
+/* 💠 specific skeleton elements matching your auth UI */
+.skeleton-title {
+  height: 24px;
+  width: 60%;
+  margin: 0 auto 10px;
+}
+
+.skeleton-input {
+  height: 38px;
+  width: 100%;
+}
+
+.skeleton-button {
+  height: 40px;
+  width: 100%;
+  background: #00f0ff33;
+}
+
+/* optional glow to match theme */
+.skeleton-glow {
+  box-shadow: 0 0 15px #00f0ff22;
+}
