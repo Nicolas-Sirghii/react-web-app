@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux"
 
 export function VerifyEmail() {
   const [status, setStatus] = useState("Verifying...");
+  const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path;
 
   useEffect(() => {
     // 1️⃣ Get token from URL
@@ -14,7 +17,7 @@ export function VerifyEmail() {
     }
 
     // 2️⃣ Send token to backend to verify
-    fetch("http://localhost:8000/verify-email", {
+    fetch(`${host}/verify-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
