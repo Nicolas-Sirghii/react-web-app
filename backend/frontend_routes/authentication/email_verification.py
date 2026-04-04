@@ -4,11 +4,10 @@ import jwt
 from datetime import datetime, timedelta
 import smtplib
 from email.mime.text import MIMEText
-from credentials import mySqlConnection
+from credentials import mySqlConnection, working_url
 
 # ===== Config =====
 SECRET_KEY = "superSecret8f39a4f8e2b0d45c8c2d8d8f2a8e7a1f"
-FRONTEND_URL = "http://localhost:5173"
 EMAIL_USER = "nicolas.mailbox100@gmail.com"
 EMAIL_PASS = "hlsr hwer rspo jitk"
 
@@ -28,7 +27,7 @@ def verify_token(token: str):
         return None
 
 def send_email(to_email: str, token: str):
-    link = f"{FRONTEND_URL}/verify-email?token={token}"
+    link = f"{working_url()}/verify-email?token={token}"
     msg = MIMEText(f"Click to verify your email: {link}")
     msg["Subject"] = "Verify your email"
     msg["From"] = EMAIL_USER
