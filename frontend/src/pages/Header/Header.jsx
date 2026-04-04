@@ -8,7 +8,8 @@ import { changePath } from "../../redux/slices/pathSlice";
 export function Header(username) {
    const [message, setMessage] = useState("Veryfy");
    const dispatch = useDispatch()
-  const { path } = useSelector((state) => state.path);
+   const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path;
   const [menuOpen, setMenuOpen] = useState(false);
   const re = useRef(null);
   useEffect(() => {
@@ -34,7 +35,7 @@ function sendVerificationById() {
     return;
   }
 
-  fetch("http://localhost:8000/send-verification-email-by-id", {
+  fetch(`${host}/send-verification-email-by-id`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user_id: userId }),

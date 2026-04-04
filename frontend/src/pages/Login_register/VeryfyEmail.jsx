@@ -3,7 +3,7 @@ import { useSelector } from "react-redux"
 
 export function VerifyEmail() {
   const [status, setStatus] = useState("Verifying...");
-  const { path } = useSelector((state) => state.path);
+   const { path } = useSelector((state) => state.path);
   const host = localStorage.getItem("api") || path;
 
   useEffect(() => {
