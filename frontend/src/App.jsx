@@ -8,6 +8,7 @@ import { ForgotPassword } from './pages/Login_register/ResetPassword'
 import { Header } from './pages/Header/Header'
 import { Message } from './pages/message/Message'
 import { UserImages } from './pages/getImages/GetImages'
+import { VerifyEmail } from './pages/Login_register/VeryfyEmail'
 
 function App() {
   
@@ -21,6 +22,7 @@ function App() {
          <Route path='/forgot-password' element={<ForgotPassword />} />
          <Route path='/message' element={<Message />} />
          <Route path='/userimages' element={<UserImages />} />
+         <Route path='/verify-email' element={<VerifyEmail/>} />
       </Routes>
     </div>
   )

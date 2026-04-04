@@ -14,6 +14,11 @@ from routes.update_message import update_message_route
 from routes.delete_file import delete_file_route
 from routes.list_images import list_images_route
 from routes.all_images import all_images_route
+from frontend_routes.authentication.email_verification import sendCode
+from frontend_routes.authentication.email_verification import verifyEmail
+from credentials import get_current_active_user
+
+print(get_current_active_user)
 
 app = FastAPI()
 
@@ -35,3 +40,5 @@ app.include_router(all_images_route)
 app.include_router(send_code_router)
 app.include_router(reset_router)
 app.include_router(list_route)
+app.include_router(verifyEmail)
+app.include_router(sendCode)

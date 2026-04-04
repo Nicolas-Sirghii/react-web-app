@@ -19,6 +19,7 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE,
     email VARCHAR(255),
     password VARCHAR(64),  -- SHA256 hash
+    is_verified TINYINT(1) DEFAULT 0,
     salt VARCHAR(32)        -- hex salt
 );
 

@@ -6,6 +6,7 @@ import { changePath } from "../../redux/slices/pathSlice";
 
 
 export function Header(username) {
+   const [message, setMessage] = useState("Veryfy");
    const dispatch = useDispatch()
   const { path } = useSelector((state) => state.path);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,10 +25,36 @@ export function Header(username) {
     dispatch(changePath());
     localStorage.setItem("api", path)
   }
+
+
+function sendVerificationById() {
+  const userId = localStorage.getItem("user_id"); // get user_id from localStorage
+  if (!userId) {
+    setMessage("User not logged in.");
+    return;
+  }
+
+  fetch("http://localhost:8000/send-verification-email-by-id", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data)
+      setMessage(`We sent a verification link to your email. Check your inbox.`);
+    })
+    .catch(() => {
+      setMessage("Failed to send verification email.");
+    });
+}
   return (
     <div>
       <div onClick={changeApi} className="api">
         {localStorage.getItem("api") || path}
+      </div>
+      <div className="veryfy" onClick={sendVerificationById}>
+        {message}
       </div>
       <div className="user-menu">
         <div
