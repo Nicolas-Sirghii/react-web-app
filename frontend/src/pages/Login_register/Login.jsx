@@ -2,12 +2,15 @@ import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { setUserData, cahngeAutorized } from "../../redux/slices/pathSlice";
+import { useDispatch } from "react-redux";
 
 export function Login() {
+  const dispatch = useDispatch();
   const { path } = useSelector((state) => state.path);
   const host = localStorage.getItem("api") || path;
   const navigate = useNavigate();
-
+ 
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -43,11 +46,10 @@ export function Login() {
       if (!data.token || data.token === "Invalid Credentials") {
         throw new Error("Invalid email or password");
       }
-
+       dispatch(setUserData(data.user))
+       dispatch(cahngeAutorized(true))
       localStorage.setItem("jwt", data.token);
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("user_id", data.user_id);
-
+      localStorage.setItem("neonverseUser", JSON.stringify(data.user))
       navigate("/message");
     } catch (err) {
       setError(err.message);

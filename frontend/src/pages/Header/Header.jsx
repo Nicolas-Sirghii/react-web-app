@@ -35,7 +35,7 @@ function sendVerificationById() {
     return;
   }
 
-  fetch(`${host}/send-verification-email-by-id`, {
+  fetch(`${host}/send-verification-email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user_id: userId }),

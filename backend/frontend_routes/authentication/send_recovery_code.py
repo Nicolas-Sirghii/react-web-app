@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from credentials import mySqlConnection
 import random
 from datetime import datetime, timedelta
-import os
 import smtplib
 from email.message import EmailMessage
 

@@ -62,7 +62,7 @@ def verify_email(data: TokenData):
 class UserIdRequest(BaseModel):
     user_id: str
 
-@sendCode.post("/send-verification-email-by-id")
+@sendCode.post("/send-verification-email")
 def send_verification_email_by_id(req: UserIdRequest):
     conn = mySqlConnection()
     cursor = conn.cursor()

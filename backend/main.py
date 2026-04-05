@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from frontend_routes.authentication.register import register
 from frontend_routes.authentication.login import login
-from frontend_routes.authentication.send_code import send_code_router
+from frontend_routes.authentication.send_recovery_code import send_code_router
 from frontend_routes.authentication.reset_password import reset_router
 from frontend_routes.list_user_images import list_route
 
@@ -16,6 +16,9 @@ from routes.list_images import list_images_route
 from routes.all_images import all_images_route
 from frontend_routes.authentication.email_verification import sendCode
 from frontend_routes.authentication.email_verification import verifyEmail
+from frontend_routes.upload_avatar import avatar
+from frontend_routes.getAvatar import getAvatarImage
+from frontend_routes.get_ueser_data import user_data
 
 
 
@@ -42,3 +45,7 @@ app.include_router(reset_router)
 app.include_router(list_route)
 app.include_router(verifyEmail)
 app.include_router(sendCode)
+app.include_router(avatar)
+app.include_router(getAvatarImage)
+app.include_router(user_data)
+

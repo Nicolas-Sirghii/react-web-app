@@ -75,18 +75,17 @@ export function Register() {
     <div className="auth-container">
       <form className="auth-card" onSubmit={handleSubmit}>
         <h2>REGISTER</h2>
-
         <input
-          name="username"
-          placeholder="Username"
+          name="email"
+          type="email"
+          placeholder="Email"
           onChange={handleChange}
           required
         />
 
         <input
-          name="email"
-          type="email"
-          placeholder="Email"
+          name="username"
+          placeholder="Username"
           onChange={handleChange}
           required
         />

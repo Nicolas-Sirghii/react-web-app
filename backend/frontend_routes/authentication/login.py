@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from credentials import mySqlConnection
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 import hashlib
 import jwt
-
 
 login = APIRouter()
 SECRET_KEY = "superSecret8f39a4f8e2b0d45c8c2d8d8f2a8e7a1f"
@@ -11,35 +10,68 @@ SECRET_KEY = "superSecret8f39a4f8e2b0d45c8c2d8d8f2a8e7a1f"
 @login.post("/login")
 async def loginUser(request: Request):
     data = await request.json()
-    email = data['email']
-    password = data['password']
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
 
     db = mySqlConnection()
     cursor = db.cursor()
 
     cursor.execute(
-        "SELECT password, salt, id, username FROM users WHERE email = %s",
+        """
+        SELECT password, salt, id, username, email, is_verified, avatar_url, age, phone, gender, bio
+        FROM users
+        WHERE email = %s
+        """,
         (email,)
     )
 
     answer = cursor.fetchone()
 
-    if answer:
-        stored_password, salt, user_id, username = answer
+    if not answer:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        hashed = hashlib.sha256((password + salt).encode()).hexdigest()
+    (
+        stored_password,
+        salt,
+        user_id,
+        username,
+        email,
+        is_verified,
+        avatar_url,
+        age,
+        phone,
+        gender,
+        bio
+    ) = answer
 
-        if hashed == stored_password:
-            payload = {
-                "user_id": user_id,   # ✅ FIXED
-                "exp": datetime.now(UTC) + timedelta(minutes=30)
-            }
+    hashed = hashlib.sha256((password + salt).encode()).hexdigest()
 
-            token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    if hashed != stored_password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-            return {"token": token, "username": username, "user_id": user_id}
+    payload = {
+        "user_id": user_id,
+        "exp": int((datetime.now(timezone.utc) + timedelta(minutes=30)).timestamp())
+    }
 
-    return {"token": "Invalid Credentials"}
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
+    return {
+        "token": token,
+        "user": {
+            "id": user_id,
+            "username": username,
+            "email": email,
+            "is_verified": is_verified,
+            "avatar_url": avatar_url,
+            "age": age,
+            "phone": phone,
+            "gender": gender,
+            "bio": bio
+        }
+    }
 
 
