@@ -3,10 +3,7 @@ import uuid
 import jwt
 from fastapi import FastAPI, APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from dotenv import load_dotenv
-from credentials import awsBucketName, awsS3Connection, mySqlConnection, secret_key
-
-load_dotenv()
+from credentials import awsBucketName, awsS3Connection, mySqlConnection
 
 app = FastAPI()
 avatar = APIRouter()
