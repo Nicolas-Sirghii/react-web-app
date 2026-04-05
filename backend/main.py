@@ -17,7 +17,6 @@ from routes.all_images import all_images_route
 from frontend_routes.authentication.email_verification import sendCode
 from frontend_routes.authentication.email_verification import verifyEmail
 from frontend_routes.upload_avatar import avatar
-from frontend_routes.getAvatar import getAvatarImage
 from frontend_routes.get_ueser_data import user_data
 
 
@@ -46,6 +45,6 @@ app.include_router(list_route)
 app.include_router(verifyEmail)
 app.include_router(sendCode)
 app.include_router(avatar)
-app.include_router(getAvatarImage)
+
 app.include_router(user_data)
 
