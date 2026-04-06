@@ -1,0 +1,68 @@
+.cyber-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  background: #0f0f1a;
+  border: 2px solid #00ffea;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #00ffea;
+  color: #00ffea;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.cyber-title {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px #00ffea;
+}
+
+.cyber-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.cyber-input {
+  padding: 10px;
+  margin: 10px 0;
+  background: #1a1a2e;
+  border: 1px solid #00ffea;
+  border-radius: 5px;
+  color: #00ffea;
+}
+
+.cyber-input:focus {
+  outline: none;
+  box-shadow: 0 0 10px #00ffea;
+}
+
+.cyber-button {
+  padding: 10px;
+  margin-top: 15px;
+  background: #00ffea;
+  color: #0f0f1a;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-shadow: none;
+  transition: 0.3s;
+}
+
+.cyber-button:hover {
+  background: #00bfa5;
+  box-shadow: 0 0 15px #00ffea;
+}
+
+.cyber-message {
+  margin-top: 15px;
+  text-align: center;
+  color: #ff3d00;
+}
+
+.cyber-checkbox {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}

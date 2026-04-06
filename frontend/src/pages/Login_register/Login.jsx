@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 export function Login() {
   const dispatch = useDispatch();
   const { path } = useSelector((state) => state.path);
+  // const { username , email, is_verified, avatar_url, age, phone, gender, bio } = useSelector((state) => state.user);
   const host = localStorage.getItem("api") || path;
   const navigate = useNavigate();
  

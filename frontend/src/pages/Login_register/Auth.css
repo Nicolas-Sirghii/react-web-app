@@ -1,0 +1,83 @@
+body {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: white;
+}
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 16px;
+}
+
+.auth-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #0ff;
+  box-shadow: 0 0 20px #0ff3;
+  padding: 30px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 380px;
+  backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 20px;
+  color: #0ff;
+  letter-spacing: 2px;
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #0ff5;
+  background: transparent;
+  color: white;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.auth-card input:focus {
+  border-color: #0ff;
+  box-shadow: 0 0 10px #0ff;
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 12px;
+  background: #0ff;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.auth-card button:hover {
+  background: #00e6e6;
+  box-shadow: 0 0 15px #0ff;
+}
+
+.message {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #0ff;
+}
+
+/* 📱 Mobile */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 20px;
+  }
+
+  .auth-card h2 {
+    font-size: 18px;
+  }
+}
