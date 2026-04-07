@@ -7,6 +7,8 @@ const initialState = {
   showPopup: false,
   showPassword: false,
   loading: false,
+  is_autorized: false,
+  
 };
 
 const loginSlice = createSlice({
@@ -27,9 +29,13 @@ const loginSlice = createSlice({
     },
     setLoading: (state, action) => {
         state.loading = action.payload;
+    },
+    check_autorization: (state, action) => {
+            state.is_autorized = action.payload;
+           
     }
   },
 });
 
-export const { setForm, setError, setShowPopup, setShowPassword, setLoading } = loginSlice.actions;
+export const { setForm, setError, setShowPopup, setShowPassword, setLoading, check_autorization } = loginSlice.actions;
 export default loginSlice.reducer;

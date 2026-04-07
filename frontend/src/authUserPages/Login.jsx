@@ -2,8 +2,9 @@ import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { setUserData, cahngeAutorized } from "../../redux/slices/pathSlice";
+import { setUserData, cahngeAutorized } from "../redux/slices/pathSlice";
 import { useDispatch } from "react-redux";
+import { check_autorization } from "../redux/slices/loginSlice";
 
 export function Login() {
   const dispatch = useDispatch();
@@ -48,10 +49,12 @@ export function Login() {
         throw new Error("Invalid email or password");
       }
        dispatch(setUserData(data.user))
+       console.log(data.user)
        dispatch(cahngeAutorized(true))
+       dispatch(check_autorization(true))
       localStorage.setItem("jwt", data.token);
       localStorage.setItem("neonverseUser", JSON.stringify(data.user))
-      navigate("/message");
+      navigate("/");
     } catch (err) {
       setError(err.message);
       setShowPopup(true);
