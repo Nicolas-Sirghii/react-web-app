@@ -12,6 +12,10 @@ import { RecoverPassword } from './authUserPages/RecoverPasswrod'
 import { SendVerificationEmail } from './authUserPages/SendVerificationEmail'
 import { VerifyEmail } from './authUserPages/VerifyEmail'
 
+
+
+import { CountdownTimer } from './assets/CountDown'
+
 import { Profile } from './pages/profile/Profile'
 
 
@@ -30,6 +34,7 @@ function App() {
          <Route path='/recover-password'        element={<RecoverPassword />} />
          <Route path='/send-verification-email' element={<SendVerificationEmail />} />
          <Route path='/is-authorized'           element={<IsAuthorizedPage />} />
+         <Route path='/count'           element={<CountdownTimer />} />
 
          <Route path='/profile'           element={<Profile />} />
       </Routes>

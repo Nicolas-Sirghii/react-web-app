@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { setUserData, cahngeAutorized } from "../redux/slices/pathSlice";
 import { useDispatch } from "react-redux";
-import { check_autorization } from "../redux/slices/loginSlice";
+import { check_autorization, setTimeLeft } from "../redux/slices/loginSlice";
 
 export function Login() {
   const dispatch = useDispatch();
@@ -49,7 +49,11 @@ export function Login() {
         throw new Error("Invalid email or password");
       }
        dispatch(setUserData(data.user))
-       console.log(data.user)
+
+       // backend gives: expire_minutes
+      const expiresAt = Date.now() + data.expire_minutes * 60 * 1000;
+      localStorage.setItem("expires_at", expiresAt);
+      dispatch(setTimeLeft())
        dispatch(cahngeAutorized(true))
        dispatch(check_autorization(true))
       localStorage.setItem("jwt", data.token);

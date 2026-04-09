@@ -15,6 +15,7 @@ SECRET_KEY = secret_key()
 JWT_ALGORITHM = "HS256"
 user_auth_router = APIRouter()
 
+expire_minutes = 30
 
 # ===== Schemas =====
 class TokenData(BaseModel):
@@ -30,15 +31,15 @@ def create_salt() -> str:
     return os.urandom(16).hex()
 
 
-def create_token(payload: dict, expire_minutes: int = 30) -> str:
+def create_token(payload: dict) -> str:
     payload["exp"] = int((datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)).timestamp())
     return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
-def create_email_token(email: str, expire_hours: int = 24) -> str:
+def create_email_token(email: str) -> str:
     payload = {
         "email": email,
-        "exp": datetime.utcnow() + timedelta(hours=expire_hours)
+        "exp": datetime.utcnow() + timedelta(minutes=expire_minutes)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
@@ -70,7 +71,7 @@ def send_email(to_email: str, subject: str, body: str):
 
 # ===== AUTH ENDPOINTS =====
 
-@user_auth_router.post("np")
+@user_auth_router.post("/register")
 async def register_user(request: Request):
     data = await request.json()
 
@@ -165,7 +166,8 @@ async def login_user(request: Request):
             "phone": phone,
             "gender": gender,
             "bio": bio
-        }
+        },
+        "expire_minutes": expire_minutes
     }
 
 
@@ -240,7 +242,7 @@ def forgot_password(email: str = Form(...)):
     if not user:
         return JSONResponse({"success": False, "message": "Email not found in system"})
 
-    token = create_email_token(email, expire_hours=1)
+    token = create_email_token(email)
     link = f"{working_url()}/recover-password?token={token}"
 
     send_email(email, "Password Recovery", f"Click to reset your password:\n{link}")
@@ -276,21 +278,3 @@ def recover_password(
 
     return {"message": "Password updated successfully"}
 
-@user_auth_router.get("/is-authorized")
-def is_authorized(authorization: str = Header(None)):
-    """
-    Check if the user token is valid.
-    Returns "1" if valid, "0" if invalid or missing.
-    Expects: Authorization header = 'Bearer <token>'
-    """
-    if not authorization or not authorization.startswith("Bearer "):
-        return {"answer":"0"}
-
-    token = authorization.split(" ")[1]
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        # Optional: you could check user exists in DB if you want extra validation
-        return {"answer":"1"}
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-        return {"answer":"0"}

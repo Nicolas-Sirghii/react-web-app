@@ -21,6 +21,7 @@ const urlSlice = createSlice({
       } else {
         state.path = "/api"
       }
+      localStorage.setItem("api", state.path)
     },
     getAvatar: (state, action) => {
      state.avatar = action.payload;
