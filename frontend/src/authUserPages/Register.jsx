@@ -9,7 +9,7 @@ export function Register() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username: "",
+    // username: "",
     email: "",
     password: "",
     confirmPassword: "", // ✅ NEW
@@ -44,7 +44,6 @@ export function Register() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: form.username,
           email: form.email,
           password: form.password,
         }), // ✅ don't send confirmPassword
@@ -82,14 +81,6 @@ export function Register() {
           onChange={handleChange}
           required
         />
-
-        <input
-          name="username"
-          placeholder="Username"
-          onChange={handleChange}
-          required
-        />
-
         {/* 🔑 PASSWORD */}
         <input
           name="password"

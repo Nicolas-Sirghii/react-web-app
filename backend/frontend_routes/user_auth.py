@@ -15,7 +15,7 @@ SECRET_KEY = secret_key()
 JWT_ALGORITHM = "HS256"
 user_auth_router = APIRouter()
 
-expire_minutes = 30
+expire_minutes = 80
 
 # ===== Schemas =====
 class TokenData(BaseModel):
@@ -75,38 +75,35 @@ def send_email(to_email: str, subject: str, body: str):
 async def register_user(request: Request):
     data = await request.json()
 
-    username = data['username']
     password = data['password']
     email = data['email']
 
     db = sql_conn()
     cursor = db.cursor()
 
-    cursor.execute(
-        "SELECT id FROM users WHERE username=%s OR email=%s",
-        (username, email)
-    )
+    cursor.execute(f"SELECT id FROM users WHERE email='{email}';")
+
     if cursor.fetchone():
         cursor.close()
         db.close()
         return JSONResponse(
             status_code=400,
-            content={"detail": "Username or email already exists"}
+            content={"detail": "Email already exists"}
         )
 
     salt = create_salt()
     hashed = hash_password(password, salt)
 
     cursor.execute(
-        "INSERT INTO users (username, password, salt, email) VALUES (%s, %s, %s, %s)",
-        (username, hashed, salt, email)
+        "INSERT INTO users (password, salt, email) VALUES (%s, %s, %s)",
+        (hashed, salt, email)
     )
     db.commit()
 
     cursor.close()
     db.close()
 
-    return {"message": f"Registered {username} successfully"}
+    return {"message": f" {email} registered successfully!"}
 
 
 @user_auth_router.post("/login")
@@ -201,18 +198,21 @@ def send_verification_email(authorization: str = Header(...)):
         raise HTTPException(status_code=400, detail="User not found")
 
     email = result[0]
+    short_email = email[:15] + "..."
 
     verification_token = create_email_token(email)
     link = f"{working_url()}/verify-email?token={verification_token}"
 
     send_email(email, "Verify your email", f"Click to verify your email: {link}")
 
-    return {"message": f"Verification link sent to {email}"}
+    return {"message": f"Verification link sent to ({short_email}).", "expires": expire_minutes}
 
 
 @user_auth_router.post("/verify-email")
 def verify_email(data: TokenData):
     email = verify_email_token(data.token)
+
+
 
     db = sql_conn()
     cursor = db.cursor()
@@ -240,14 +240,14 @@ def forgot_password(email: str = Form(...)):
     db.close()
 
     if not user:
-        return JSONResponse({"success": False, "message": "Email not found in system"})
+        return JSONResponse({"success": False, "message": "Wrong email !"})
 
     token = create_email_token(email)
     link = f"{working_url()}/recover-password?token={token}"
 
     send_email(email, "Password Recovery", f"Click to reset your password:\n{link}")
 
-    return {"success": True, "message": "Recovery link sent"}
+    return {"success": True, "message": f"Recovery link sent to {email} ! The link expires in {expire_minutes} minutes !"}
 
 @user_auth_router.post("/recover-password")
 def recover_password(

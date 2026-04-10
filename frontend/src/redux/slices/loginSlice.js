@@ -9,7 +9,7 @@ const initialState = {
   showPassword: false,
   loading: false,
   is_autorized: false,
-  timeLeft: 0
+  timeLeft: null
   
 };
 
@@ -36,8 +36,7 @@ const loginSlice = createSlice({
             state.is_autorized = action.payload; 
     },
     setTimeLeft: (state) => {
-        const expiresAt = localStorage.getItem("expires_at");
-        if (!expiresAt) return 0;
+        const expiresAt = localStorage.getItem("expires_at") || 0;
         state.timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
     }
   },

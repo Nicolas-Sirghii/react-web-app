@@ -2,13 +2,17 @@ import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { setUserData, cahngeAutorized } from "../redux/slices/pathSlice";
 import { useDispatch } from "react-redux";
-import { check_autorization, setTimeLeft } from "../redux/slices/loginSlice";
+import { setTimeLeft } from "../redux/slices/loginSlice";
+import { setUserData } from "../redux/slices/userSlice";
+
 
 export function Login() {
   const dispatch = useDispatch();
   const { path } = useSelector((state) => state.path);
+  const { email } = useSelector((state) => state.userSlice);
+  console.log(email)
+  
   // const { username , email, is_verified, avatar_url, age, phone, gender, bio } = useSelector((state) => state.user);
   const host = localStorage.getItem("api") || path;
   const navigate = useNavigate();
@@ -49,13 +53,10 @@ export function Login() {
         throw new Error("Invalid email or password");
       }
        dispatch(setUserData(data.user))
-
        // backend gives: expire_minutes
       const expiresAt = Date.now() + data.expire_minutes * 60 * 1000;
       localStorage.setItem("expires_at", expiresAt);
       dispatch(setTimeLeft())
-       dispatch(cahngeAutorized(true))
-       dispatch(check_autorization(true))
       localStorage.setItem("jwt", data.token);
       localStorage.setItem("neonverseUser", JSON.stringify(data.user))
       navigate("/");

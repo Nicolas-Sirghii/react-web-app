@@ -6,17 +6,11 @@ import { Header } from './elements/Header'
 import { Home } from './pages/Home/Home'
 import { Register } from './authUserPages/Register'
 import { Login } from './authUserPages/Login'
-import { IsAuthorizedPage } from './authUserPages/IsAuthorized'
 import { ForgotPassword } from './authUserPages/ForgotPassword'
 import { RecoverPassword } from './authUserPages/RecoverPasswrod'
-import { SendVerificationEmail } from './authUserPages/SendVerificationEmail'
 import { VerifyEmail } from './authUserPages/VerifyEmail'
 
-
-
-import { CountdownTimer } from './assets/CountDown'
-
-import { Profile } from './pages/profile/Profile'
+import { Profile } from './pages/userData/Profile'
 
 
 function App() {
@@ -32,11 +26,9 @@ function App() {
          <Route path='/verify-email'            element={<VerifyEmail/>} />
          <Route path='/forgot-password'         element={<ForgotPassword />} />
          <Route path='/recover-password'        element={<RecoverPassword />} />
-         <Route path='/send-verification-email' element={<SendVerificationEmail />} />
-         <Route path='/is-authorized'           element={<IsAuthorizedPage />} />
-         <Route path='/count'           element={<CountdownTimer />} />
+         
 
-         <Route path='/profile'           element={<Profile />} />
+         <Route path='/profile'                 element={<Profile />} />
       </Routes>
     </div>
   )

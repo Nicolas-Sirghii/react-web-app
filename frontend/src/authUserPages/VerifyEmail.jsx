@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { setVerifiEmail } from "../redux/slices/userSlice";
+import { useDispatch } from "react-redux";
 
 export function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const [message, setMessage] = useState("");
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -23,18 +27,28 @@ export function VerifyEmail() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Verification failed");
         setMessage(data.message);
+        dispatch(setVerifiEmail())
       } catch (err) {
         setMessage(err.message);
       }
     };
 
     verifyEmail();
+
+     setTimeout(() => {
+       window.location.href = "/profile";
+    }, 4000);
+
   }, [searchParams]);
 
   return (
     <div>
-      <h2>Email Verification</h2>
-      {message && <p>{message}</p>}
+        <div className="popup-overlay">
+          <div className="popup">
+            <h2>Email Verification</h2>
+            {message && <p>{message}</p>}
+          </div>
+        </div>
     </div>
   );
 }
