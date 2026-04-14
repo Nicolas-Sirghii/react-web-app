@@ -15,7 +15,8 @@ SECRET_KEY = secret_key()
 JWT_ALGORITHM = "HS256"
 user_auth_router = APIRouter()
 
-expire_minutes = 80
+expire_session_minutes = 60
+expire_email_minutes = 15
 
 # ===== Schemas =====
 class TokenData(BaseModel):
@@ -32,14 +33,14 @@ def create_salt() -> str:
 
 
 def create_token(payload: dict) -> str:
-    payload["exp"] = int((datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)).timestamp())
+    payload["exp"] = int((datetime.now(timezone.utc) + timedelta(minutes=expire_session_minutes)).timestamp())
     return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def create_email_token(email: str) -> str:
     payload = {
         "email": email,
-        "exp": datetime.utcnow() + timedelta(minutes=expire_minutes)
+        "exp": datetime.utcnow() + timedelta(minutes=expire_email_minutes)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
@@ -164,7 +165,7 @@ async def login_user(request: Request):
             "gender": gender,
             "bio": bio
         },
-        "expire_minutes": expire_minutes
+        "expire_minutes": expire_session_minutes
     }
 
 
@@ -205,7 +206,7 @@ def send_verification_email(authorization: str = Header(...)):
 
     send_email(email, "Verify your email", f"Click to verify your email: {link}")
 
-    return {"message": f"Verification link sent to ({short_email}).", "expires": expire_minutes}
+    return {"message": f"Verification link sent to ({short_email}).", "expires": expire_email_minutes}
 
 
 @user_auth_router.post("/verify-email")
@@ -247,7 +248,7 @@ def forgot_password(email: str = Form(...)):
 
     send_email(email, "Password Recovery", f"Click to reset your password:\n{link}")
 
-    return {"success": True, "message": f"Recovery link sent to {email} ! The link expires in {expire_minutes} minutes !"}
+    return {"success": True, "message": f"Recovery link sent to {email} ! The link expires in {expire_email_minutes} minutes !"}
 
 @user_auth_router.post("/recover-password")
 def recover_password(

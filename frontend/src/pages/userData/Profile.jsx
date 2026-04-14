@@ -1,11 +1,18 @@
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { useSelector, useDispatch} from "react-redux";
+import { setUserData } from "../../redux/slices/userSlice";
 import "./Profile.css";
 
 export function Profile() {
   const fileInputRef = useRef(null);
+  const dispatch = useDispatch()
+ 
+
   const [popup, setPopup] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const [avatarFile, setAvatarFile] = useState(null);
 
   // 🔥 Redux user data
   const {
@@ -31,7 +38,7 @@ export function Profile() {
     is_verified: false
   });
 
-  // 🔄 Sync Redux → local state
+  // 🔄 Sync Redux → local
   useEffect(() => {
     setFormData({
       username: username || "",
@@ -43,16 +50,7 @@ export function Profile() {
       avatarPreview: avatar_url || "",
       is_verified: is_verified || false
     });
-  }, [
-    username,
-    email,
-    age,
-    phone,
-    gender,
-    bio,
-    avatar_url,
-    is_verified
-  ]);
+  }, [username, email, age, phone, gender, bio, avatar_url, is_verified]);
 
   // ✏️ input handler
   const handleChange = (e) => {
@@ -72,69 +70,89 @@ export function Profile() {
     const file = e.target.files[0];
 
     if (file) {
+      setAvatarFile(file);
+
+      const preview = URL.createObjectURL(file);
+
       setFormData({
         ...formData,
-        avatarPreview: URL.createObjectURL(file)
+        avatarPreview: preview
       });
     }
   };
 
-  // 📧 verify email (UI simulation for now)
-  // const verifyEmail = () => {
-  //   setPopup(true);
-
-  //   setTimeout(() => {
-  //     setPopup(false);
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       is_verified: true
-  //     }));
-  //   }, 1200);
-  // };
-  //..............................................................................
-  const [message, setMessage] = useState("");
-  const [expires, setExpires] = useState("")
-
-
-  const handleSendEmail = async () => {
+  // 🚀 SAVE PROFILE
+  const handleSaveProfile = async () => {
     const token = localStorage.getItem("jwt");
+
     if (!token) {
-      setMessage("No login token found.");
+      setMessage("Not authenticated");
+      setPopup(true);
       return;
     }
 
+    setLoading(true);
+
     try {
-      const res = await fetch("http://localhost:8000/send-verification-email", {
+      const form = new FormData();
+
+      form.append("username", formData.username);
+      form.append("email", formData.email);
+      form.append("age", formData.age);
+      form.append("phone", formData.phone);
+      form.append("gender", formData.gender);
+      form.append("bio", formData.bio);
+
+      if (avatarFile) {
+        form.append("avatar", avatarFile);
+      }
+     
+
+      const res = await fetch("http://localhost:8000/update-profile", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+          Authorization: `Bearer ${token}`
+        },
+        body: form
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Something went wrong");
+       dispatch(setUserData(data.user_data))
 
-      
-      setPopup(true)
-      setMessage(data.message);
-      setExpires(data.expires)
-      setTimeout(() => {
-        setPopup(false)
-      }, 6000);
+      if (!res.ok) throw new Error(data.detail || "Error updating profile");
+
+      setMessage("Profile updated successfully");
+      setPopup(true);
+
     } catch (err) {
       setMessage(err.message);
+      setPopup(true);
+    } finally {
+      setLoading(false);
+
+      setTimeout(() => {
+        setPopup(false);
+      }, 4000);
     }
   };
-  //................................................................................
 
   return (
     <div className="profile-container">
 
+      {/* LOADING */}
+      {loading && (
+        <div className="skeleton-overlay">
+          <div className="skeleton-card"></div>
+        </div>
+      )}
+
       {/* AVATAR */}
       <div className="avatar-section">
         <img
-          src={formData.avatarPreview || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH-UUug53VoMV0rggFl2tsYJ5oywZ43hjn-Q&s"}
+          src={
+            formData.avatarPreview ||
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH-UUug53VoMV0rggFl2tsYJ5oywZ43hjn-Q&s"
+          }
           className="avatar"
           onClick={handleAvatarClick}
         />
@@ -164,7 +182,6 @@ export function Profile() {
       {/* EMAIL */}
       <div className="field">
         <label>EMAIL</label>
-
         <div className="email-row">
           <input
             name="email"
@@ -174,9 +191,8 @@ export function Profile() {
 
           <span
             className={formData.is_verified ? "verified" : "not-verified"}
-            onClick={!formData.is_verified ? handleSendEmail : undefined }
           >
-            {formData.is_verified ? "VERIFIED" : "VERIFY"}
+            {formData.is_verified ? "VERIFIED" : "NOT VERIFIED"}
           </span>
         </div>
       </div>
@@ -225,15 +241,16 @@ export function Profile() {
         />
       </div>
 
-      {/* SAVE BUTTON (UI only for now) */}
-      <button>SAVE PROFILE</button>
+      {/* SAVE BUTTON */}
+      <button onClick={handleSaveProfile}>
+        {loading ? "Saving..." : "SAVE PROFILE"}
+      </button>
 
       {/* POPUP */}
       {popup && (
         <div className="popup-overlay">
           <div className="popup">
             <h2>{message}</h2>
-            <p>Expires in <span className="expiresMinutes">{expires}</span> minutes.</p>
           </div>
         </div>
       )}

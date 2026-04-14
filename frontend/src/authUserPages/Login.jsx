@@ -10,9 +10,7 @@ import { setUserData } from "../redux/slices/userSlice";
 export function Login() {
   const dispatch = useDispatch();
   const { path } = useSelector((state) => state.path);
-  const { email } = useSelector((state) => state.userSlice);
-  console.log(email)
-  
+ 
   // const { username , email, is_verified, avatar_url, age, phone, gender, bio } = useSelector((state) => state.user);
   const host = localStorage.getItem("api") || path;
   const navigate = useNavigate();
