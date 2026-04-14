@@ -6,6 +6,9 @@ import "./Profile.css";
 export function Profile() {
   const fileInputRef = useRef(null);
   const dispatch = useDispatch()
+
+  const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path;
  
 
   const [popup, setPopup] = useState(false);
@@ -108,7 +111,7 @@ export function Profile() {
       }
      
 
-      const res = await fetch("http://localhost:8000/update-profile", {
+      const res = await fetch(`${host}/update-profile`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
