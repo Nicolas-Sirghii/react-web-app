@@ -11,6 +11,7 @@ import { RecoverPassword } from './authUserPages/RecoverPasswrod'
 import { VerifyEmail } from './authUserPages/VerifyEmail'
 
 import { Profile } from './pages/userData/Profile'
+import { VerifyButton } from './pages/verifiedAnimation/verifiedAnimation'
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
          
 
          <Route path='/profile'                 element={<Profile />} />
+         <Route path='/verifi-animation'        element={<VerifyButton />} />
       </Routes>
     </div>
   )

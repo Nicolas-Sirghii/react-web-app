@@ -41,6 +41,18 @@ export function VerifyEmail() {
 
   }, [searchParams]);
 
+
+//   const markAsVerified = () => {
+//   clearInterval(countdownInterval.current);
+//   clearInterval(sendingInterval.current);
+
+//   localStorage.removeItem(STORAGE_KEY);
+//   localStorage.setItem(VERIFIED_KEY, "true");
+
+//   setState("verified");
+//   setTimeLeft(0);
+// };
+
   return (
     <div>
         <div className="popup-overlay">
