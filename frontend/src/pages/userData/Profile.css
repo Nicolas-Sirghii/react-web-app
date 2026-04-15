@@ -103,7 +103,6 @@
   font-size: 11px;
   padding: 6px 10px;
   border-radius: 999px;
-  cursor: pointer;
   user-select: none;
 }
 
@@ -114,6 +113,7 @@
 }
 
 .not-verified {
+  cursor: pointer;
   color: #ff4d6d;
   border: 1px solid rgba(255, 77, 109, 0.4);
   text-decoration: none;

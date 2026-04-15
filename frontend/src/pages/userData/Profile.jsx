@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch} from "react-redux";
 import { setUserData } from "../../redux/slices/userSlice";
 import "./Profile.css";
 
 export function Profile() {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const dispatch = useDispatch()
 
@@ -139,6 +141,10 @@ export function Profile() {
     }
   };
 
+  function verifiEmail() {
+    navigate("/verify-email")
+  }
+
   return (
     <div className="profile-container">
 
@@ -192,7 +198,7 @@ export function Profile() {
             onChange={handleChange}
           />
 
-          <span
+          <span onClick={formData.is_verified ? undefined : verifiEmail}
             className={formData.is_verified ? "verified" : "not-verified"}
           >
             {formData.is_verified ? "VERIFIED" : "NOT VERIFIED"}
