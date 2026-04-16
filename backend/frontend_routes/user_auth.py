@@ -16,7 +16,7 @@ JWT_ALGORITHM = "HS256"
 user_auth_router = APIRouter()
 
 expire_session_minutes = 60
-expire_email_minutes = 1
+expire_email_minutes = 15
 
 # ===== Schemas =====
 class TokenData(BaseModel):

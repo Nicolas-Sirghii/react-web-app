@@ -46,6 +46,9 @@ export function VerifyEmail() {
 //   clearInterval(countdownInterval.current);
 //   clearInterval(sendingInterval.current);
 
+//   const STORAGE_KEY = "verify_end_time";
+//   const VERIFIED_KEY = "is_verified";
+
 //   localStorage.removeItem(STORAGE_KEY);
 //   localStorage.setItem(VERIFIED_KEY, "true");
 

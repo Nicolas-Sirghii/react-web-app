@@ -3,18 +3,21 @@ import { useSelector, useDispatch} from "react-redux";
 import { setUserData } from "../../redux/slices/userSlice";
 import "./Profile.css";
 
+
 export function Profile() {
-  
+
+
   const fileInputRef = useRef(null);
   const dispatch = useDispatch()
 
   const { path } = useSelector((state) => state.path);
   const host = localStorage.getItem("api") || path;
- 
+
 
   const [popup, setPopup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  
 
   const [avatarFile, setAvatarFile] = useState(null);
 
@@ -29,6 +32,8 @@ export function Profile() {
     gender,
     bio
   } = useSelector((state) => state.userSlice);
+  const isVer_ified = is_verified ? "VERIFIED" : "NOT VERIFIED"
+  const [verifyMessage, setVerifiMessage] = useState(isVer_ified)
 
   // Local editable state
   const [formData, setFormData] = useState({
@@ -138,10 +143,16 @@ export function Profile() {
         setPopup(false);
       }, 4000);
     }
+
   };
+
+
+
+
 
  
   const handleSendEmail = async () => {
+    setVerifiMessage("SENDING...")
     const token = localStorage.getItem("jwt");
     if (!token) {
       setMessage("No login token found.");
@@ -163,9 +174,12 @@ export function Profile() {
       
       setPopup(true)
       setMessage(data.message);
+      setVerifiMessage("LINK SENT")
+     
       setTimeout(() => {
         setPopup(false)
       }, 4000);
+    
     } catch (err) {
       setMessage(err.message);
     }
@@ -227,8 +241,15 @@ export function Profile() {
           <span onClick={formData.is_verified ? undefined : handleSendEmail}
             className={formData.is_verified ? "verified" : "not-verified"}
           >
-            {formData.is_verified ? "VERIFIED" : "NOT VERIFIED"}
+            {verifyMessage}
           </span>
+
+          {/* <VerifyButton className={formData.is_verified ? "verified" : "not-verified"} /> */}
+
+          
+
+
+
         </div>
       </div>
 
