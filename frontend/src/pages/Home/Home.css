@@ -1,118 +1,114 @@
-/* HOME PAGE */
+/* ===== Page ===== */
+.feed-page {
+  min-height: 100dvh;
+  background: radial-gradient(circle at top, #0b1020, #05070f);
 
-.home-container {
-  min-height: 100vh;
-  background: radial-gradient(circle at top, #0a0a0f, #050507);
-  color: white;
+  display: flex;
+  justify-content: center;
   padding: 20px;
 }
 
-/* USER MENU */
-.user-menu {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-}
-
-.user-circle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-}
-
-.user-circle img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #00f0ff;
-}
-
-.user-circle span {
-  margin-top: 5px;
-  font-size: 14px;
-}
-
-/* DROPDOWN */
-.dropdown {
-  margin-top: 10px;
-  background: #111;
-  border-radius: 10px;
-  box-shadow: 0 0 15px #00f0ff55;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-}
-
-.dropdown button {
-  background: none;
-  border: none;
-  color: white;
-  padding: 8px;
-  cursor: pointer;
-}
-
-.dropdown button:hover {
-  color: #00f0ff;
-}
-
-/* CONTENT */
-.home-content {
+/* ===== Feed Container ===== */
+.feed {
+  width: 100%;
   max-width: 600px;
-  margin: 100px auto;
-  text-align: center;
-}
-
-.home-content h1 {
-  color: #00f0ff;
-  text-shadow: 0 0 15px #00f0ff;
-}
-
-/* TASK INPUT */
-.task-input {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.task-input input {
-  flex: 1;
-  padding: 10px;
-  background: #1a1a2e;
-  border: none;
-  border-radius: 6px;
-  color: white;
-}
-
-.task-input button {
-  background: #00f0ff;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* TASK LIST */
-.task-list {
-  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
-.task {
-  background: #111;
-  padding: 12px;
-  border-radius: 6px;
+/* ===== Post Card ===== */
+.post-card {
+  background: rgba(10, 15, 30, 0.9);
+  border-radius: 16px;
+  padding: 16px;
+
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+
+  color: #eaf6ff;
+}
+
+/* ===== Header ===== */
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #00ffff, #0066ff);
+}
+
+.post-header h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.post-header p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* ===== Content ===== */
+.post-content {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ===== Image ===== */
+.post-image {
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* ===== Actions ===== */
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.post-actions button {
+  flex: 1;
+
+  background: transparent;
+  border: none;
+
+  color: #00ffff;
+  font-size: 14px;
+
+  padding: 10px;
+  border-radius: 10px;
+
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
 }
 
-.task:hover {
-  box-shadow: 0 0 10px #00f0ff55;
+.post-actions button:hover {
+  background: rgba(0, 255, 255, 0.1);
 }
 
-.task.done {
-  text-decoration: line-through;
-  opacity: 0.5;
+/* ===== Mobile Optimization ===== */
+@media (max-width: 600px) {
+  .feed-page {
+    padding: 10px;
+  }
+
+  .post-card {
+    padding: 14px;
+  }
+
+  .post-actions button {
+    font-size: 13px;
+    padding: 8px;
+  }
 }

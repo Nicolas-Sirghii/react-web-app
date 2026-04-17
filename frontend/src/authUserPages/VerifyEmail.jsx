@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { setVerifiEmail } from "../redux/slices/userSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const [message, setMessage] = useState("");
+
+
+  const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path;
 
   const dispatch = useDispatch();
 
@@ -18,7 +22,7 @@ export function VerifyEmail() {
 
     const verifyEmail = async () => {
       try {
-        const res = await fetch("http://localhost:8000/verify-email", {
+        const res = await fetch(`${host}/verify-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token })
@@ -42,19 +46,6 @@ export function VerifyEmail() {
   }, [searchParams]);
 
 
-//   const markAsVerified = () => {
-//   clearInterval(countdownInterval.current);
-//   clearInterval(sendingInterval.current);
-
-//   const STORAGE_KEY = "verify_end_time";
-//   const VERIFIED_KEY = "is_verified";
-
-//   localStorage.removeItem(STORAGE_KEY);
-//   localStorage.setItem(VERIFIED_KEY, "true");
-
-//   setState("verified");
-//   setTimeLeft(0);
-// };
 
   return (
     <div>

@@ -10,7 +10,7 @@ export function Header() {
   const dispatch = useDispatch()
   const { timeLeft } = useSelector((state) => state.user_data);
   const { path, userData } = useSelector((state) => state.path);
-  
+
   const user = JSON.parse(localStorage.getItem("neonverseUser")) || userData
   const host = localStorage.getItem("api") || path;
 
@@ -31,22 +31,6 @@ export function Header() {
       .toString()
       .padStart(2, "0")}`;
   };
-  // if (timeLeft <= 0) {
-  //   let loggedOut = JSON.parse(localStorage.getItem("neonverseUser")) || {
-  //     id: 11,
-  //     username: null,
-  //     email: "",
-  //     is_verified: 0,
-  //     avatar_url: null,
-  //     age: null,
-  //     phone: null,
-  //     gender: null,
-  //     bio: null,
-  //     is_loged_in: false
-  //   };
-  //   loggedOut.is_loged_in = false;
-  //   dispatch(setUserData(loggedOut))
-  // }
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,7 +79,7 @@ export function Header() {
 
 
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        <Link to="/">Message</Link>
+        <Link to="/">+</Link>
 
         <a href="#" onClick={() => dispatch(changePath())}>{host}</a>
         <Link to="/">User images</Link>
@@ -117,14 +101,14 @@ export function Header() {
               className="user-dropdown"
               style={{ top: dropdownPos.top, right: dropdownPos.right }}
             >
-              {timeLeft > 0 &&  <Link to="/profile">
+              {timeLeft > 0 && <Link to="/profile">
                 {/* Profile Icon */}
                 <svg viewBox="0 0 24 24" fill="currentColor" className="dropdown-icon">
                   <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
                 </svg>
                 Profile
               </Link>}
-              
+
               <Link to="/">
                 {/* Settings Icon */}
                 <svg viewBox="0 0 24 24" fill="currentColor" className="dropdown-icon">
@@ -145,14 +129,14 @@ export function Header() {
                 )
                 :
                 (
-                <Link to="/login">
-                  {/* Login Icon */}
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="dropdown-icon">
-                    <path d="M10 17v-2h4v-2h-4v-2l-5 3 5 3zm9-13H5c-1.1 0-2 .9-2 2v4h2V6h14v12H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
-                  </svg>
-                  Login/Register
-                </Link>
-              )}
+                  <Link to="/login">
+                    {/* Login Icon */}
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="dropdown-icon">
+                      <path d="M10 17v-2h4v-2h-4v-2l-5 3 5 3zm9-13H5c-1.1 0-2 .9-2 2v4h2V6h14v12H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
+                    </svg>
+                    Login/Register
+                  </Link>
+                )}
 
 
             </div>
