@@ -1,0 +1,11 @@
+
+.feed-container {
+  max-width: 800px;
+  margin: 40px auto;
+}
+
+.feed-title {
+  text-align: center;
+  color: #00ffff;
+  text-shadow: 0 0 12px #00ffff, 0 0 25px #ff00ff;
+}

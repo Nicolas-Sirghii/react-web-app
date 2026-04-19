@@ -1,0 +1,25 @@
+.comment-section {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 10px;
+}
+
+.comment {
+  font-size: 14px;
+  color: #cceeff;
+}
+
+.comment-input {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-input input {
+  flex: 1;
+  padding: 6px;
+  background: #05070f;
+  border: 1px solid rgba(255,0,255,0.2);
+  border-radius: 6px;
+  color: white;
+}

@@ -79,10 +79,11 @@ export function Header() {
 
 
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        <Link to="/">+</Link>
+        {timeLeft > 0 && <Link to="/feed">Feed</Link>}
+        
 
         <a href="#" onClick={() => dispatch(changePath())}>{host}</a>
-        <Link to="/">User images</Link>
+        {/* <Link to="/">User images</Link> */}
       </nav>
 
 

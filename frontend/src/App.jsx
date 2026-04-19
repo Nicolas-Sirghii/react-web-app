@@ -12,6 +12,8 @@ import { VerifyEmail } from './authUserPages/VerifyEmail'
 
 import { Profile } from './pages/userData/Profile'
 
+import { FeedPage } from './pages/FeedPage/FeedPage'
+
 
 
 function App() {
@@ -30,6 +32,7 @@ function App() {
          
 
          <Route path='/profile'                 element={<Profile />} />
+         <Route path='/feed'                    element={<FeedPage />} />
         
       </Routes>
     </div>
