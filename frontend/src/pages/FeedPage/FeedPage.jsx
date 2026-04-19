@@ -6,14 +6,15 @@ import CreatePost from "./components/CreatePost";
 import PostCard from "./components/PostCard";
 
 export function FeedPage() {
-    const { path } = useSelector((state) => state.path);
+    const { path} = useSelector((state) => state.path);
+    const host = localStorage.getItem("api") || path;
     const { timeLeft } = useSelector((state) => state.user_data);
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(1);
 
     const fetchPosts = async (p = 1) => {
         const res = await fetch(
-            `${path}/posts?page=${p}&limit=10`,
+            `${host}/posts?page=${p}&limit=10`,
             {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("jwt")}`

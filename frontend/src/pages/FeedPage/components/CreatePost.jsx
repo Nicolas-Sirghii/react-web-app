@@ -7,6 +7,7 @@ export default function CreatePost({ onPostCreated }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false); // 👈 NEW
   const { path } = useSelector((state) => state.path);
+   const host = localStorage.getItem("api") || path;
 
   const handleSubmit = async () => {
     
@@ -16,7 +17,7 @@ export default function CreatePost({ onPostCreated }) {
 
     try {
       // 1. create post
-      const res = await fetch(`${path}/posts`, {
+      const res = await fetch(`${host}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,7 +34,7 @@ export default function CreatePost({ onPostCreated }) {
         const formData = new FormData();
         files.forEach(f => formData.append("files", f));
 
-        await fetch(`${path}/posts/${postId}/media`, {
+        await fetch(`${host}/posts/${postId}/media`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("jwt")}`

@@ -36,8 +36,11 @@ const loginSlice = createSlice({
             state.is_autorized = action.payload; 
     },
     setTimeLeft: (state) => {
+        state.is_autorized = true
         const expiresAt = localStorage.getItem("expires_at") || 0;
         state.timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+
+        state.is_autorized = (expiresAt > 0 ? true : false)
     }
   },
 });

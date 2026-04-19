@@ -7,13 +7,13 @@ import { setTimeLeft } from "../redux/slices/loginSlice";
 import "./Header.css";
 
 export function Header() {
-  const dispatch = useDispatch()
-  const { timeLeft } = useSelector((state) => state.user_data);
-  const { path, userData } = useSelector((state) => state.path);
 
+  const dispatch = useDispatch()
+  const { timeLeft, is_autorized} = useSelector((state) => state.user_data);
+  const { path, userData} = useSelector((state) => state.path);
+  
   const user = JSON.parse(localStorage.getItem("neonverseUser")) || userData
   const host = localStorage.getItem("api") || path;
-
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -79,7 +79,7 @@ export function Header() {
 
 
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        {timeLeft > 0 && <Link to="/feed">Feed</Link>}
+        {is_autorized && <Link to="/feed">Feed</Link>}
         
 
         <a href="#" onClick={() => dispatch(changePath())}>{host}</a>
@@ -102,7 +102,7 @@ export function Header() {
               className="user-dropdown"
               style={{ top: dropdownPos.top, right: dropdownPos.right }}
             >
-              {timeLeft > 0 && <Link to="/profile">
+              {is_autorized && <Link to="/profile">
                 {/* Profile Icon */}
                 <svg viewBox="0 0 24 24" fill="currentColor" className="dropdown-icon">
                   <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
@@ -118,7 +118,7 @@ export function Header() {
                 Settings
               </Link>
 
-              {timeLeft > 0 ?
+              {is_autorized ?
                 (
                   <a href="#" onClick={logout}>
                     {/* Logout Icon */}

@@ -4,11 +4,12 @@ import { useSelector } from "react-redux";
 
 export default function CommentSection({ postId }) {
   const { path } = useSelector((state) => state.path);
+  const host = localStorage.getItem("api") || path;
   const [comments, setComments] = useState([]);
   const [content, setContent] = useState("");
 
   const fetchComments = async () => {
-    const res = await fetch(`${path}/posts/${postId}/comments`, {
+    const res = await fetch(`${host}/posts/${postId}/comments`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("jwt")}`
       }
@@ -18,7 +19,7 @@ export default function CommentSection({ postId }) {
   };
 
   const addComment = async () => {
-    await fetch(`${path}/posts/${postId}/comments`, {
+    await fetch(`${host}/posts/${postId}/comments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

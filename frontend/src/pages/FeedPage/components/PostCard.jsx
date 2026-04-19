@@ -10,9 +10,10 @@ export default function PostCard({ post, onRefresh }) {
   const [edit, setEdit] = useState(false);
   const [text, setText] = useState(post.content);
    const { path } = useSelector((state) => state.path);
+   const host = localStorage.getItem("api") || path;
 
   const saveEdit = async () => {
-    await fetch(`${path}/posts/${post.id}`, {
+    await fetch(`${host}/posts/${post.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -26,7 +27,7 @@ export default function PostCard({ post, onRefresh }) {
   };
 
   const deletePost = async () => {
-    await fetch(`${path}/posts/${post.id}`, {
+    await fetch(`${host}/posts/${post.id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("jwt")}`
