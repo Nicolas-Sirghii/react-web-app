@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { setTimeLeft } from "../redux/slices/loginSlice";
+import { setTimeLeft, setAutorization } from "../redux/slices/loginSlice";
 import { setUserData } from "../redux/slices/userSlice";
 
 
@@ -53,6 +53,7 @@ export function Login() {
       const expiresAt = Date.now() + data.expire_minutes * 60 * 1000;
       localStorage.setItem("expires_at", expiresAt);
       dispatch(setTimeLeft())
+      dispatch(setAutorization(true))
       localStorage.setItem("jwt", data.token);
       localStorage.setItem("neonverseUser", JSON.stringify(data.user))
       navigate("/");

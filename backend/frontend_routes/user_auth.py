@@ -105,7 +105,42 @@ async def register_user(request: Request):
     db.close()
 
     return {"message": f" {email} registered successfully!"}
+#...................................................................................
+def get_user_id(request: Request):
+    auth = request.headers.get("Authorization")
+    token = auth.split(" ")[1]
+    payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    return payload["user_id"]
 
+@user_auth_router.delete("/delete-account")
+def delete_account(request: Request):
+    user_id = get_user_id(request)# extracted from JWT
+    print(user_id)
+
+    conn = sql_conn()
+    cursor = conn.cursor()
+
+    try:
+        # delete user (CASCADE handles posts, media, comments)
+        cursor.execute("""
+            DELETE FROM users
+            WHERE id = %s
+        """, (user_id,))
+
+        conn.commit()
+
+        return {"message": "Account deleted successfully"}
+
+    except Exception as e:
+        conn.rollback()
+        return {"detail": str(e)}
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+#...................................................................................
 
 @user_auth_router.post("/login")
 async def login_user(request: Request):
@@ -278,4 +313,7 @@ def recover_password(
     db.close()
 
     return {"message": "Password updated successfully"}
+
+
+
 

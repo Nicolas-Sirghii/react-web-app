@@ -1,9 +1,17 @@
+.media-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+}
+
 .media-container img,
 .media-container video {
   width: 100%;
-  margin-top: 10px;
-  border-radius: 10px;
+  max-height: 400px;
 
-  border: 1px solid rgba(0,255,255,0.2);
-  box-shadow: 0 0 10px rgba(0,255,255,0.2);
+  object-fit: contain;
+  border-radius: 12px;
+
+  background: black;
 }

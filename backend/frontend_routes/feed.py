@@ -62,12 +62,25 @@ def get_posts(request: Request, page: int = 1, limit: int = 10):
             p.id AS post_id,
             p.content,
             p.created_at,
+
+            COALESCE(c.comments_count, 0) AS comments_count,
+
             m.id AS media_id,
             m.type,
             m.url
+
         FROM posts p
+
         LEFT JOIN media m ON p.id = m.post_id
+
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS comments_count
+            FROM comments
+            GROUP BY post_id
+        ) c ON p.id = c.post_id
+
         WHERE p.user_id = %s
+
         ORDER BY p.created_at DESC
         LIMIT %s OFFSET %s
     """, (user_id, limit, offset))
@@ -84,6 +97,7 @@ def get_posts(request: Request, page: int = 1, limit: int = 10):
                 "id": pid,
                 "content": r["content"],
                 "created_at": r["created_at"],
+                "comments_count": r["comments_count"],  # 👈 NEW
                 "media": []
             }
 
@@ -98,8 +112,6 @@ def get_posts(request: Request, page: int = 1, limit: int = 10):
     conn.close()
 
     return list(posts_map.values())
-
-
 # -------- MEDIA UPLOAD --------
 @feedRouter.post("/posts/{post_id}/media")
 async def upload_media(post_id: int, request: Request, files: list[UploadFile] = File(...)):

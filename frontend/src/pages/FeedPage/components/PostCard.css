@@ -1,57 +1,38 @@
-/* normal image */
-.clickable-img {
+.post-card {
+  background: radial-gradient(circle at top, #0b1020, #05070f);
+  border: 1px solid rgba(0, 255, 255, 0.08);
+  border-radius: 16px;
+
+  padding: 18px;
+  margin-bottom: 20px;
+
+  color: #eaf6ff;
+
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.05);
+  transition: 0.2s;
+}
+
+.post-card:hover {
+  box-shadow: 0 0 35px rgba(0, 255, 255, 0.08);
+}
+
+.post-card p {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  color: #d7f9ff;
+}
+
+.post-card textarea {
   width: 100%;
-  margin-top: 10px;
-  border-radius: 10px;
-  cursor: pointer;
+  min-height: 80px;
+  resize: none;
 
-  border: 1px solid rgba(0,255,255,0.2);
-  box-shadow: 0 0 10px rgba(0,255,255,0.2);
-
-  transition: 0.2s ease;
-}
-
-.clickable-img:hover {
-  transform: scale(1.01);
-}
-
-/* FULLSCREEN OVERLAY */
-.fullscreen-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-
-  width: 100vw;
-  height: 100vh;
-
-  background: rgba(0, 0, 0, 0.95);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  z-index: 9999;
-}
-
-/* FULLSCREEN IMAGE */
-.fullscreen-img {
-  max-width: 95vw;
-  max-height: 95vh;
-
+  background: #05070f;
+  border: 1px solid rgba(0, 255, 255, 0.15);
   border-radius: 10px;
 
-  box-shadow: 0 0 40px #00ffff, 0 0 80px #ff00ff;
-  animation: popIn 0.2s ease;
-}
-
-/* animation */
-@keyframes popIn {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  color: #eaf6ff;
+  padding: 10px;
+  margin-bottom: 10px;
 }

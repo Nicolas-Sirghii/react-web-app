@@ -184,6 +184,35 @@ export function Profile() {
       setMessage(err.message);
     }
   };
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This cannot be undone."
+    );
+
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem("jwt");
+
+    try {
+      const res = await fetch(`${host}/delete-account`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.detail || "Delete failed");
+
+      localStorage.clear();
+      window.location.href = "/";
+    } catch (err) {
+      setMessage(err.message);
+      setPopup(true);
+    }
+  };
+
 
   return (
     <div className="profile-container">
@@ -310,6 +339,17 @@ export function Profile() {
           </div>
         </div>
       )}
+       <button
+        onClick={handleDeleteAccount}
+        style={{
+          marginTop: "10px",
+          background: "transparent",
+          border: "1px solid red",
+          color: "red"
+        }}
+      >
+        DELETE ACCOUNT
+      </button>
     </div>
   );
 }

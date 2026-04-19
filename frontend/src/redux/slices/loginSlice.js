@@ -32,7 +32,7 @@ const loginSlice = createSlice({
     setLoading: (state, action) => {
         state.loading = action.payload;
     },
-    check_autorization: (state, action) => {
+    setAutorization: (state, action) => {
             state.is_autorized = action.payload; 
     },
     setTimeLeft: (state) => {
@@ -40,10 +40,9 @@ const loginSlice = createSlice({
         const expiresAt = localStorage.getItem("expires_at") || 0;
         state.timeLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
 
-        state.is_autorized = (expiresAt > 0 ? true : false)
     }
   },
 });
 
-export const { setForm, setError, setShowPopup, setShowPassword, setLoading, check_autorization, setTimeLeft } = loginSlice.actions;
+export const { setForm, setError, setShowPopup, setShowPassword, setLoading, setAutorization, setTimeLeft } = loginSlice.actions;
 export default loginSlice.reducer;

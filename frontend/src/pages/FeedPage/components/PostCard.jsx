@@ -6,6 +6,7 @@ import MediaRenderer from "./MediaRenderer";
 import CommentSection from "./CommentSection";
 
 export default function PostCard({ post, onRefresh }) {
+  // console.log(post.comments_count)
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
   const [text, setText] = useState(post.content);
@@ -60,7 +61,7 @@ export default function PostCard({ post, onRefresh }) {
         </button>
 
         <button className="cyber-btn" onClick={() => setShow(!show)}>
-          Comments
+          Comments{post.comments_count}
         </button>
       </div>
 

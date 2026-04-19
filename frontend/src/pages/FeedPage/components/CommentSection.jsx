@@ -33,8 +33,11 @@ export default function CommentSection({ postId }) {
   };
 
   useEffect(() => {
-    () => (fetchComments())();
-    
+    const getComments = () => {
+      fetchComments()
+    }
+    getComments()
+
   }, []);
 
   return (

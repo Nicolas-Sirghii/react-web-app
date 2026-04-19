@@ -2,14 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { changePath } from "../redux/slices/pathSlice";
-import { setTimeLeft } from "../redux/slices/loginSlice";
+import { setTimeLeft, setAutorization } from "../redux/slices/loginSlice";
 
 import "./Header.css";
 
 export function Header() {
 
   const dispatch = useDispatch()
-  const { timeLeft, is_autorized} = useSelector((state) => state.user_data);
+  const { timeLeft, is_autorized } = useSelector((state) => state.user_data);
   const { path, userData} = useSelector((state) => state.path);
   
   const user = JSON.parse(localStorage.getItem("neonverseUser")) || userData
@@ -38,7 +38,6 @@ export function Header() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -79,7 +78,7 @@ export function Header() {
 
 
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        {is_autorized && <Link to="/feed">Feed</Link>}
+        {timeLeft > 0 && <Link to="/feed">Feed</Link>}
         
 
         <a href="#" onClick={() => dispatch(changePath())}>{host}</a>
@@ -102,7 +101,7 @@ export function Header() {
               className="user-dropdown"
               style={{ top: dropdownPos.top, right: dropdownPos.right }}
             >
-              {is_autorized && <Link to="/profile">
+              {timeLeft > 0 && <Link to="/profile">
                 {/* Profile Icon */}
                 <svg viewBox="0 0 24 24" fill="currentColor" className="dropdown-icon">
                   <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
@@ -118,7 +117,7 @@ export function Header() {
                 Settings
               </Link>
 
-              {is_autorized ?
+              {timeLeft > 0 ?
                 (
                   <a href="#" onClick={logout}>
                     {/* Logout Icon */}

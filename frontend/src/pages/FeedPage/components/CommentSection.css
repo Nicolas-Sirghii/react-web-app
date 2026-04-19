@@ -1,12 +1,14 @@
 .comment-section {
-  margin-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 12px;
   padding-top: 10px;
+
+  border-top: 1px solid rgba(0, 255, 255, 0.08);
 }
 
 .comment {
-  font-size: 14px;
-  color: #cceeff;
+  font-size: 13px;
+  padding: 6px 0;
+  color: #cdefff;
 }
 
 .comment-input {
@@ -17,9 +19,12 @@
 
 .comment-input input {
   flex: 1;
-  padding: 6px;
+
   background: #05070f;
-  border: 1px solid rgba(255,0,255,0.2);
-  border-radius: 6px;
-  color: white;
+  border: 1px solid rgba(0, 255, 255, 0.12);
+  border-radius: 8px;
+
+  color: #eaf6ff;
+  padding: 6px 8px;
+  font-size: 13px;
 }

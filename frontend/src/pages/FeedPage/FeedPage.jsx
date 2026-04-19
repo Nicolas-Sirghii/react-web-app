@@ -23,7 +23,6 @@ export function FeedPage() {
         );
 
         const data = await res.json();
-
         if (p === 1) setPosts(data);
         else setPosts(prev => [...prev, ...data]);
     };
