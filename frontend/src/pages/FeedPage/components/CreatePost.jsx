@@ -1,19 +1,22 @@
 import { useState } from "react";
 import "./CreatePost.css";
+import { useSelector } from "react-redux";
 
 export default function CreatePost({ onPostCreated }) {
   const [content, setContent] = useState("");
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false); // 👈 NEW
+  const { path } = useSelector((state) => state.path);
 
   const handleSubmit = async () => {
+    
     if (loading) return; // prevent double click
 
     setLoading(true); // 👈 start uploading state
 
     try {
       // 1. create post
-      const res = await fetch("http://localhost:8000/posts", {
+      const res = await fetch(`${path}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,7 +33,7 @@ export default function CreatePost({ onPostCreated }) {
         const formData = new FormData();
         files.forEach(f => formData.append("files", f));
 
-        await fetch(`http://localhost:8000/posts/${postId}/media`, {
+        await fetch(`${path}/posts/${postId}/media`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("jwt")}`
