@@ -77,9 +77,11 @@ export function Header() {
       <Link to="/" className="logo-link"><div className="logo">NEONVERSE</div></Link>
 
 
+
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
         {timeLeft > 0 && <Link to="/feed">Feed</Link>}
-        
+        <Link to="/cover">Canvas</Link>
+        <Link to="/render">Render Canvas</Link>
 
         <a href="#" onClick={() => dispatch(changePath())}>{host}</a>
         {/* <Link to="/">User images</Link> */}
