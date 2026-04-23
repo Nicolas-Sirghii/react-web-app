@@ -1,7 +1,39 @@
-import React, { useRef, useState } from "react";
-import "./canvas.css";
+
+
+import React, { useRef, useState, useEffect } from "react";
+import "./canvas.css"
+
+
+
+
+
+  
+  
+    
+      
+
+
+
+
+
+
+
 
 export function ImageCanvasEditor() {
+
+  
+ const [thick, setThick] = useState(false);
+
+  useEffect(() => {
+    if (thick) {
+      document.body.classList.add("thick-scroll");
+    } else {
+      document.body.classList.remove("thick-scroll");
+    }
+  }, [thick]);
+
+
+
   const containerRef = useRef(null);
 
   const [image, setImage] = useState(null);
@@ -10,17 +42,7 @@ export function ImageCanvasEditor() {
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
-  // ---------------- ZOOM ----------------
-  const [scale, setScale] = useState(1);
-  const lastDistance = useRef(null);
-  const isPinching = useRef(false);
-
-  // ---------------- DELETE ----------------
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const holdTimer = useRef(null);
-
-  // ---------------- EDIT MODE ----------------
-  const mode = useRef("idle");
+  const mode = useRef("idle"); // draw | drag | resize
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
   const pointerId = useRef(null);
@@ -43,7 +65,7 @@ export function ImageCanvasEditor() {
     img.src = url;
   };
 
-  // ---------------- HELPERS ----------------
+  // ---------------- PERCENT POSITION ----------------
   const getPercent = (e) => {
     const rect = containerRef.current.getBoundingClientRect();
 
@@ -55,57 +77,8 @@ export function ImageCanvasEditor() {
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-  const getDistance = (t1, t2) =>
-    Math.hypot(
-      t2.clientX - t1.clientX,
-      t2.clientY - t1.clientY
-    );
-
-  // ---------------- PINCH ZOOM ----------------
-  const onTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      isPinching.current = true;
-      lastDistance.current = getDistance(
-        e.touches[0],
-        e.touches[1]
-      );
-    }
-  };
-
-  const onTouchMove = (e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-
-      isPinching.current = true;
-
-      const dist = getDistance(
-        e.touches[0],
-        e.touches[1]
-      );
-
-      if (lastDistance.current) {
-        const delta = dist / lastDistance.current;
-
-        setScale((prev) =>
-          clamp(prev * delta, 0.5, 3)
-        );
-
-        lastDistance.current = dist;
-      }
-    }
-  };
-
-  const onTouchEnd = (e) => {
-    if (e.touches.length < 2) {
-      isPinching.current = false;
-      lastDistance.current = null;
-    }
-  };
-
   // ---------------- CREATE RECT ----------------
   const onPointerDownCanvas = (e) => {
-    if (isPinching.current) return;
-
     if (e.target.dataset.type) return;
     if (!image) return;
 
@@ -140,8 +113,6 @@ export function ImageCanvasEditor() {
 
   // ---------------- MOVE ----------------
   const onPointerMove = (e) => {
-    if (isPinching.current) return;
-
     if (pointerId.current !== e.pointerId) return;
 
     const { x: mx, y: my } = getPercent(e);
@@ -150,6 +121,7 @@ export function ImageCanvasEditor() {
       prev.map((r) => {
         if (r.id !== activeId) return r;
 
+        // ---------------- DRAW ----------------
         if (mode.current === "draw") {
           const width = Math.abs(mx - start.current.x);
           const height = Math.abs(my - start.current.y);
@@ -165,6 +137,7 @@ export function ImageCanvasEditor() {
           };
         }
 
+        // ---------------- DRAG (FIXED) ----------------
         if (mode.current === "drag") {
           const newX = mx - offset.current.x;
           const newY = my - offset.current.y;
@@ -176,6 +149,7 @@ export function ImageCanvasEditor() {
           };
         }
 
+        // ---------------- RESIZE (FIXED SAFE) ----------------
         if (mode.current === "resize") {
           return {
             ...r,
@@ -194,15 +168,14 @@ export function ImageCanvasEditor() {
     mode.current = "idle";
     pointerId.current = null;
 
+    // cleanup tiny invalid rectangles
     setRects((prev) =>
       prev.filter((r) => r.width > 1 && r.height > 1)
     );
   };
 
-  // ---------------- DRAG + HOLD DELETE ----------------
+  // ---------------- DRAG START ----------------
   const startDrag = (e, r) => {
-    if (isPinching.current) return;
-
     e.stopPropagation();
 
     setActiveId(r.id);
@@ -220,21 +193,10 @@ export function ImageCanvasEditor() {
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {}
-
-    // ---------------- HOLD TO DELETE ----------------
-    holdTimer.current = setTimeout(() => {
-      setDeleteTarget(r);
-    }, 600);
   };
 
-  const stopHold = () => {
-    clearTimeout(holdTimer.current);
-  };
-
-  // ---------------- RESIZE ----------------
+  // ---------------- RESIZE START ----------------
   const startResize = (e, r) => {
-    if (isPinching.current) return;
-
     e.stopPropagation();
 
     setActiveId(r.id);
@@ -245,12 +207,6 @@ export function ImageCanvasEditor() {
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {}
-  };
-
-  // ---------------- DELETE ----------------
-  const deleteRect = (id) => {
-    setRects((prev) => prev.filter((r) => r.id !== id));
-    setActiveId(null);
   };
 
   // ---------------- INPUT UPDATE ----------------
@@ -266,7 +222,11 @@ export function ImageCanvasEditor() {
   const handleSubmit = () => {
     console.log(
       JSON.stringify(
-        { image, ratio, rects },
+        {
+          image,
+          ratio,
+          rects,
+        },
         null,
         2
       )
@@ -275,6 +235,9 @@ export function ImageCanvasEditor() {
 
   return (
     <div>
+    <button onClick={() => setThick(prev => !prev)}>
+        Toggle Global Scrollbar
+      </button>
       <input type="file" onChange={handleImage} />
 
       {/* CANVAS */}
@@ -283,9 +246,6 @@ export function ImageCanvasEditor() {
         onPointerDown={onPointerDownCanvas}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
         style={{
           width: "100vw",
           aspectRatio: ratio,
@@ -293,10 +253,6 @@ export function ImageCanvasEditor() {
           overflow: "hidden",
           userSelect: "none",
           touchAction: "none",
-
-          transform: `scale(${scale})`,
-          transformOrigin: "center",
-
           backgroundImage: image ? `url(${image})` : "none",
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",
@@ -308,8 +264,6 @@ export function ImageCanvasEditor() {
             key={r.id}
             data-type="box"
             onPointerDown={(e) => startDrag(e, r)}
-            onPointerUp={stopHold}
-            onPointerLeave={stopHold}
             style={{
               position: "absolute",
               left: `${r.x}%`,
@@ -357,6 +311,8 @@ export function ImageCanvasEditor() {
             style={{
               padding: 10,
               display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               gap: "10px",
               border:
                 r.id === activeId
@@ -366,12 +322,15 @@ export function ImageCanvasEditor() {
             }}
           >
             <input
+              placeholder="Field 1"
               value={r.field1}
               onChange={(e) =>
                 updateField(r.id, "field1", e.target.value)
               }
             />
+
             <input
+              placeholder="Field 2"
               value={r.field2}
               onChange={(e) =>
                 updateField(r.id, "field2", e.target.value)
@@ -386,48 +345,6 @@ export function ImageCanvasEditor() {
           </button>
         )}
       </div>
-
-      {/* DELETE POPUP */}
-      {deleteTarget && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#111",
-              padding: 20,
-              borderRadius: 10,
-              color: "white",
-              textAlign: "center",
-            }}
-          >
-            <p>Delete this box?</p>
-
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <button
-                onClick={() => {
-                  deleteRect(deleteTarget.id);
-                  setDeleteTarget(null);
-                }}
-              >
-                Yes
-              </button>
-
-              <button onClick={() => setDeleteTarget(null)}>
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
