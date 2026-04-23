@@ -10,11 +10,13 @@ export function ImageCanvasEditor() {
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
-  // ---------------- ZOOM STATE ----------------
+  // ---------------- ZOOM ----------------
   const [scale, setScale] = useState(1);
   const lastDistance = useRef(null);
+  const isPinching = useRef(false);
 
-  const mode = useRef("idle");
+  // ---------------- EDIT MODE ----------------
+  const mode = useRef("idle"); // draw | drag | resize
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
   const pointerId = useRef(null);
@@ -37,7 +39,7 @@ export function ImageCanvasEditor() {
     img.src = url;
   };
 
-  // ---------------- PERCENT POSITION ----------------
+  // ---------------- HELPERS ----------------
   const getPercent = (e) => {
     const rect = containerRef.current.getBoundingClientRect();
 
@@ -49,16 +51,16 @@ export function ImageCanvasEditor() {
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-  // ---------------- PINCH HELPERS ----------------
-  const getDistance = (t1, t2) => {
-    return Math.hypot(
+  const getDistance = (t1, t2) =>
+    Math.hypot(
       t2.clientX - t1.clientX,
       t2.clientY - t1.clientY
     );
-  };
 
+  // ---------------- PINCH ZOOM ----------------
   const onTouchStart = (e) => {
     if (e.touches.length === 2) {
+      isPinching.current = true;
       lastDistance.current = getDistance(
         e.touches[0],
         e.touches[1]
@@ -68,9 +70,14 @@ export function ImageCanvasEditor() {
 
   const onTouchMove = (e) => {
     if (e.touches.length === 2) {
-      e.preventDefault(); // IMPORTANT: stops rectangle drawing
+      e.preventDefault();
 
-      const dist = getDistance(e.touches[0], e.touches[1]);
+      isPinching.current = true;
+
+      const dist = getDistance(
+        e.touches[0],
+        e.touches[1]
+      );
 
       if (lastDistance.current) {
         const delta = dist / lastDistance.current;
@@ -84,14 +91,16 @@ export function ImageCanvasEditor() {
     }
   };
 
-  const onTouchEnd = () => {
-    lastDistance.current = null;
+  const onTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      isPinching.current = false;
+      lastDistance.current = null;
+    }
   };
 
   // ---------------- CREATE RECT ----------------
   const onPointerDownCanvas = (e) => {
-    // ❌ ignore pinch second finger (prevents break)
-    if (e.pointerType === "touch" && e.isPrimary === false) return;
+    if (isPinching.current) return; // 🚫 IMPORTANT
 
     if (e.target.dataset.type) return;
     if (!image) return;
@@ -127,6 +136,8 @@ export function ImageCanvasEditor() {
 
   // ---------------- MOVE ----------------
   const onPointerMove = (e) => {
+    if (isPinching.current) return; // 🚫 BLOCK EVERYTHING DURING ZOOM
+
     if (pointerId.current !== e.pointerId) return;
 
     const { x: mx, y: my } = getPercent(e);
@@ -186,6 +197,8 @@ export function ImageCanvasEditor() {
 
   // ---------------- DRAG ----------------
   const startDrag = (e, r) => {
+    if (isPinching.current) return;
+
     e.stopPropagation();
 
     setActiveId(r.id);
@@ -207,6 +220,8 @@ export function ImageCanvasEditor() {
 
   // ---------------- RESIZE ----------------
   const startResize = (e, r) => {
+    if (isPinching.current) return;
+
     e.stopPropagation();
 
     setActiveId(r.id);
@@ -232,11 +247,7 @@ export function ImageCanvasEditor() {
   const handleSubmit = () => {
     console.log(
       JSON.stringify(
-        {
-          image,
-          ratio,
-          rects,
-        },
+        { image, ratio, rects },
         null,
         2
       )
@@ -325,6 +336,8 @@ export function ImageCanvasEditor() {
             style={{
               padding: 10,
               display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               gap: "10px",
               border:
                 r.id === activeId
@@ -334,12 +347,15 @@ export function ImageCanvasEditor() {
             }}
           >
             <input
+              placeholder="Field 1"
               value={r.field1}
               onChange={(e) =>
                 updateField(r.id, "field1", e.target.value)
               }
             />
+
             <input
+              placeholder="Field 2"
               value={r.field2}
               onChange={(e) =>
                 updateField(r.id, "field2", e.target.value)
