@@ -1,0 +1,20 @@
+/* default (completely untouched browser scrollbar) */
+body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* thick mode ONLY */
+body.thick-scroll::-webkit-scrollbar {
+  width: 40px;
+  height: 40px;
+}
+
+body.thick-scroll::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+body.thick-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ffff, #ff00ff);
+  border-radius: 12px;
+}

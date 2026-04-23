@@ -1,8 +1,39 @@
 
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import "./canvas.css"
+
+
+
+
+
+  
+  
+    
+      
+
+
+
+
+
+
+
 
 export function ImageCanvasEditor() {
+
+  
+ const [thick, setThick] = useState(false);
+
+  useEffect(() => {
+    if (thick) {
+      document.body.classList.add("thick-scroll");
+    } else {
+      document.body.classList.remove("thick-scroll");
+    }
+  }, [thick]);
+
+
+
   const containerRef = useRef(null);
 
   const [image, setImage] = useState(null);
@@ -204,6 +235,9 @@ export function ImageCanvasEditor() {
 
   return (
     <div>
+    <button onClick={() => setThick(prev => !prev)}>
+        Toggle Global Scrollbar
+      </button>
       <input type="file" onChange={handleImage} />
 
       {/* CANVAS */}
