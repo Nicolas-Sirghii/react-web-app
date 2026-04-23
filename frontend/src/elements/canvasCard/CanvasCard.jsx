@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 export function ImageCanvasEditor() {
   const containerRef = useRef(null);
@@ -7,36 +7,40 @@ export function ImageCanvasEditor() {
   const [image, setImage] = useState(null);
   const [ratio, setRatio] = useState(1);
 
-  // ---------------- RECTANGLES (PIXEL SPACE) ----------------
+  // ---------------- RECTANGLES ----------------
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
-  // ---------------- EDIT MODE ----------------
+  // ---------------- MODE ----------------
   const mode = useRef("idle");
-  const start = useRef({ x: 0, y: 0 });
-  const offset = useRef({ x: 0, y: 0 });
   const pointerId = useRef(null);
 
-  // ---------------- GESTURE STATE ----------------
+  // ---------------- LIVE POINTER STATE ----------------
   const pointers = useRef(new Map());
 
+  // ---------------- GESTURE STATE ----------------
   const gesture = useRef({
     active: false,
     startDistance: 0,
     startScale: 1,
     startMid: { x: 0, y: 0 },
-    startOffset: { x: 0, y: 0 },
+    startTransform: { x: 0, y: 0 },
   });
 
+  // ---------------- TRANSFORM ----------------
   const [transform, setTransform] = useState({
     scale: 1,
     x: 0,
     y: 0,
   });
 
+  // ---------------- TEMP DRAG STATE ----------------
+  const start = useRef({ x: 0, y: 0 });
+  const offset = useRef({ x: 0, y: 0 });
+
   const createId = () => Date.now() + Math.random();
 
-  // ---------------- IMAGE LOAD ----------------
+  // ---------------- IMAGE ----------------
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -63,9 +67,10 @@ export function ImageCanvasEditor() {
     y: (a.y + b.y) / 2,
   });
 
-  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const clamp = (v, min, max) =>
+    Math.max(min, Math.min(max, v));
 
-  // ---------------- WORLD COORDINATES (IMPORTANT FIX) ----------------
+  // ---------------- WORLD SPACE ----------------
   const getWorldPoint = (e) => {
     const rect = containerRef.current.getBoundingClientRect();
 
@@ -75,12 +80,25 @@ export function ImageCanvasEditor() {
     };
   };
 
+  // ---------------- RESET EVERYTHING (IMPORTANT FIX) ----------------
+  const resetPointers = () => {
+    pointers.current.clear();
+    gesture.current.active = false;
+    mode.current = "idle";
+    pointerId.current = null;
+  };
+
+  useEffect(() => {
+    window.addEventListener("blur", resetPointers);
+    return () => window.removeEventListener("blur", resetPointers);
+  }, []);
+
   // ---------------- POINTER DOWN ----------------
   const onPointerDown = (e) => {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // 👉 2 FINGERS = GESTURE MODE
+    // 👉 GESTURE START
     if (pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
 
@@ -88,14 +106,19 @@ export function ImageCanvasEditor() {
       gesture.current.startDistance = distance(p1, p2);
       gesture.current.startMid = midpoint(p1, p2);
       gesture.current.startScale = transform.scale;
-      gesture.current.startOffset = { ...transform };
+      gesture.current.startTransform = {
+        x: transform.x,
+        y: transform.y,
+      };
 
       mode.current = "gesture";
       setActiveId(null);
       return;
     }
 
-    // 👉 SINGLE FINGER = DRAW
+    // 👉 BLOCK accidental draw during multi-touch
+    if (pointers.current.size > 1) return;
+
     if (!image) return;
 
     const { x, y } = getWorldPoint(e);
@@ -127,7 +150,7 @@ export function ImageCanvasEditor() {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // ---------------- GESTURE (ZOOM + PAN) ----------------
+    // ---------------- GESTURE ----------------
     if (gesture.current.active && pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
 
@@ -140,17 +163,17 @@ export function ImageCanvasEditor() {
       setTransform({
         scale: gesture.current.startScale * scaleFactor,
         x:
-          gesture.current.startOffset.x +
+          gesture.current.startTransform.x +
           (newMid.x - gesture.current.startMid.x),
         y:
-          gesture.current.startOffset.y +
+          gesture.current.startTransform.y +
           (newMid.y - gesture.current.startMid.y),
       });
 
       return;
     }
 
-    // ---------------- RECTANGLE EDITING ----------------
+    // ---------------- RECT EDIT ----------------
     if (pointerId.current !== e.pointerId) return;
 
     const { x, y } = getWorldPoint(e);
@@ -159,18 +182,21 @@ export function ImageCanvasEditor() {
       prev.map((r) => {
         if (r.id !== activeId) return r;
 
-        // DRAW
+        // DRAW (FIXED NORMALIZATION)
         if (mode.current === "draw") {
+          const x1 = Math.min(x, start.current.x);
+          const y1 = Math.min(y, start.current.y);
+
           return {
             ...r,
-            x: Math.min(x, start.current.x),
-            y: Math.min(y, start.current.y),
+            x: x1,
+            y: y1,
             width: Math.abs(x - start.current.x),
             height: Math.abs(y - start.current.y),
           };
         }
 
-        // DRAG
+        // DRAG (FIXED STABILITY)
         if (mode.current === "drag") {
           const newX = x - offset.current.x;
           const newY = y - offset.current.y;
@@ -182,12 +208,17 @@ export function ImageCanvasEditor() {
           };
         }
 
-        // RESIZE
+        // RESIZE (FIXED DIRECTION SAFETY)
         if (mode.current === "resize") {
+          const x1 = Math.min(r.x, x);
+          const y1 = Math.min(r.y, y);
+
           return {
             ...r,
-            width: Math.max(2, x - r.x),
-            height: Math.max(2, y - r.y),
+            x: x1,
+            y: y1,
+            width: Math.abs(x - r.x),
+            height: Math.abs(y - r.y),
           };
         }
 
@@ -208,11 +239,11 @@ export function ImageCanvasEditor() {
     pointerId.current = null;
 
     setRects((prev) =>
-      prev.filter((r) => r.width > 1 && r.height > 1)
+      prev.filter((r) => r.width > 2 && r.height > 2)
     );
   };
 
-  // ---------------- DRAG START ----------------
+  // ---------------- DRAG ----------------
   const startDrag = (e, r) => {
     e.stopPropagation();
 
@@ -327,7 +358,7 @@ export function ImageCanvasEditor() {
         </div>
       </div>
 
-      {/* INPUTS */}
+      {/* INPUTS + EXPORT */}
       <div style={{ marginTop: 20 }}>
         {rects.map((r) => (
           <div key={r.id}>
