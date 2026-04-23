@@ -10,9 +10,9 @@ export function ImageCanvasEditor() {
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
-  // 🔥 ZOOM STATE
+  // ---------------- ZOOM STATE ----------------
   const [scale, setScale] = useState(1);
-  const lastTouchDist = useRef(null);
+  const lastDistance = useRef(null);
 
   const mode = useRef("idle");
   const start = useRef({ x: 0, y: 0 });
@@ -59,7 +59,7 @@ export function ImageCanvasEditor() {
 
   const onTouchStart = (e) => {
     if (e.touches.length === 2) {
-      lastTouchDist.current = getDistance(
+      lastDistance.current = getDistance(
         e.touches[0],
         e.touches[1]
       );
@@ -68,30 +68,30 @@ export function ImageCanvasEditor() {
 
   const onTouchMove = (e) => {
     if (e.touches.length === 2) {
-      e.preventDefault();
+      e.preventDefault(); // IMPORTANT: stops rectangle drawing
 
       const dist = getDistance(e.touches[0], e.touches[1]);
 
-      if (lastTouchDist.current) {
-        const delta = dist / lastTouchDist.current;
+      if (lastDistance.current) {
+        const delta = dist / lastDistance.current;
 
         setScale((prev) =>
           clamp(prev * delta, 0.5, 3)
         );
 
-        lastTouchDist.current = dist;
+        lastDistance.current = dist;
       }
     }
   };
 
   const onTouchEnd = () => {
-    lastTouchDist.current = null;
+    lastDistance.current = null;
   };
 
   // ---------------- CREATE RECT ----------------
   const onPointerDownCanvas = (e) => {
-    // ❌ prevent drawing during pinch (touch)
-    if (e.pointerType === "touch") return;
+    // ❌ ignore pinch second finger (prevents break)
+    if (e.pointerType === "touch" && e.isPrimary === false) return;
 
     if (e.target.dataset.type) return;
     if (!image) return;
@@ -232,7 +232,11 @@ export function ImageCanvasEditor() {
   const handleSubmit = () => {
     console.log(
       JSON.stringify(
-        { image, ratio, rects },
+        {
+          image,
+          ratio,
+          rects,
+        },
         null,
         2
       )
