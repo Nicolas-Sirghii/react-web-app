@@ -7,6 +7,12 @@ export function ImageCanvasEditor() {
   const [image, setImage] = useState(null);
   const [ratio, setRatio] = useState(1);
 
+  // REAL IMAGE BOUNDS (IMPORTANT FIX)
+  const imageBounds = useRef({
+    width: 0,
+    height: 0,
+  });
+
   // ---------------- RECTANGLES ----------------
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -15,10 +21,10 @@ export function ImageCanvasEditor() {
   const mode = useRef("idle");
   const pointerId = useRef(null);
 
-  // ---------------- LIVE POINTER STATE ----------------
+  // ---------------- POINTERS ----------------
   const pointers = useRef(new Map());
 
-  // ---------------- GESTURE STATE ----------------
+  // ---------------- GESTURE ----------------
   const gesture = useRef({
     active: false,
     startDistance: 0,
@@ -27,20 +33,19 @@ export function ImageCanvasEditor() {
     startTransform: { x: 0, y: 0 },
   });
 
-  // ---------------- TRANSFORM ----------------
   const [transform, setTransform] = useState({
     scale: 1,
     x: 0,
     y: 0,
   });
 
-  // ---------------- TEMP DRAG STATE ----------------
+  // ---------------- TEMP STATE ----------------
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
 
   const createId = () => Date.now() + Math.random();
 
-  // ---------------- IMAGE ----------------
+  // ---------------- IMAGE LOAD ----------------
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -50,6 +55,12 @@ export function ImageCanvasEditor() {
 
     img.onload = () => {
       setRatio(img.width / img.height);
+
+      imageBounds.current = {
+        width: img.width,
+        height: img.height,
+      };
+
       setImage(url);
     };
 
@@ -80,8 +91,8 @@ export function ImageCanvasEditor() {
     };
   };
 
-  // ---------------- RESET EVERYTHING (IMPORTANT FIX) ----------------
-  const resetPointers = () => {
+  // ---------------- RESET ----------------
+  const reset = () => {
     pointers.current.clear();
     gesture.current.active = false;
     mode.current = "idle";
@@ -89,8 +100,8 @@ export function ImageCanvasEditor() {
   };
 
   useEffect(() => {
-    window.addEventListener("blur", resetPointers);
-    return () => window.removeEventListener("blur", resetPointers);
+    window.addEventListener("blur", reset);
+    return () => window.removeEventListener("blur", reset);
   }, []);
 
   // ---------------- POINTER DOWN ----------------
@@ -98,7 +109,7 @@ export function ImageCanvasEditor() {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // 👉 GESTURE START
+    // 👉 PINCH START
     if (pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
 
@@ -106,22 +117,29 @@ export function ImageCanvasEditor() {
       gesture.current.startDistance = distance(p1, p2);
       gesture.current.startMid = midpoint(p1, p2);
       gesture.current.startScale = transform.scale;
-      gesture.current.startTransform = {
-        x: transform.x,
-        y: transform.y,
-      };
+      gesture.current.startTransform = { ...transform };
 
       mode.current = "gesture";
       setActiveId(null);
       return;
     }
 
-    // 👉 BLOCK accidental draw during multi-touch
+    // 👉 BLOCK multi-touch drawing
     if (pointers.current.size > 1) return;
 
     if (!image) return;
 
     const { x, y } = getWorldPoint(e);
+
+    // 🚨 IMPORTANT: BLOCK DRAW OUTSIDE IMAGE
+    if (
+      x < 0 ||
+      y < 0 ||
+      x > imageBounds.current.width ||
+      y > imageBounds.current.height
+    ) {
+      return;
+    }
 
     start.current = { x, y };
 
@@ -173,7 +191,6 @@ export function ImageCanvasEditor() {
       return;
     }
 
-    // ---------------- RECT EDIT ----------------
     if (pointerId.current !== e.pointerId) return;
 
     const { x, y } = getWorldPoint(e);
@@ -182,43 +199,55 @@ export function ImageCanvasEditor() {
       prev.map((r) => {
         if (r.id !== activeId) return r;
 
-        // DRAW (FIXED NORMALIZATION)
+        // ---------------- DRAW (CLAMPED) ----------------
         if (mode.current === "draw") {
-          const x1 = Math.min(x, start.current.x);
-          const y1 = Math.min(y, start.current.y);
+          const x1 = clamp(x, 0, imageBounds.current.width);
+          const y1 = clamp(y, 0, imageBounds.current.height);
 
           return {
             ...r,
-            x: x1,
-            y: y1,
-            width: Math.abs(x - start.current.x),
-            height: Math.abs(y - start.current.y),
+            x: Math.min(x1, start.current.x),
+            y: Math.min(y1, start.current.y),
+            width: Math.abs(x1 - start.current.x),
+            height: Math.abs(y1 - start.current.y),
           };
         }
 
-        // DRAG (FIXED STABILITY)
+        // ---------------- DRAG (CLAMPED) ----------------
         if (mode.current === "drag") {
-          const newX = x - offset.current.x;
-          const newY = y - offset.current.y;
+          const newX = clamp(
+            x - offset.current.x,
+            0,
+            imageBounds.current.width - r.width
+          );
 
-          return {
-            ...r,
-            x: newX,
-            y: newY,
-          };
+          const newY = clamp(
+            y - offset.current.y,
+            0,
+            imageBounds.current.height - r.height
+          );
+
+          return { ...r, x: newX, y: newY };
         }
 
-        // RESIZE (FIXED DIRECTION SAFETY)
+        // ---------------- RESIZE (CLAMPED) ----------------
         if (mode.current === "resize") {
-          const x1 = Math.min(r.x, x);
-          const y1 = Math.min(r.y, y);
+          const newW = clamp(
+            x - r.x,
+            2,
+            imageBounds.current.width - r.x
+          );
+
+          const newH = clamp(
+            y - r.y,
+            2,
+            imageBounds.current.height - r.y
+          );
 
           return {
             ...r,
-            x: x1,
-            y: y1,
-            width: Math.abs(x - r.x),
-            height: Math.abs(y - r.y),
+            width: newW,
+            height: newH,
           };
         }
 
@@ -358,8 +387,21 @@ export function ImageCanvasEditor() {
         </div>
       </div>
 
-      {/* INPUTS + EXPORT */}
-      <div style={{ marginTop: 20 }}>
+      {/* UI (FIXED VISIBILITY ON MOBILE) */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: "35vh",
+          overflowY: "auto",
+          background: "rgba(0,0,0,0.9)",
+          color: "white",
+          padding: 10,
+          zIndex: 9999,
+        }}
+      >
         {rects.map((r) => (
           <div key={r.id}>
             <input
