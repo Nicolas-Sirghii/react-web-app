@@ -1,7 +1,7 @@
 // import { useEffect } from 'react';
 import './App.css'
 
-import { Routes, Route, data } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Header } from './elements/Header'
 import { Home } from './pages/Home/Home'
 import { Register } from './authUserPages/Register'
@@ -14,7 +14,7 @@ import { Profile } from './pages/userData/Profile'
 
 import { FeedPage } from './pages/FeedPage/FeedPage'
 import { ImageCanvasEditor } from './elements/canvasCard/CanvasCard'
-import { ImageCanvasRenderer } from './elements/canvasCard/RenderCanvas'
+// import { ImageCanvasRenderer } from './elements/canvasCard/RenderCanvas'
 
 const data2 = {
   "image": "blob:http://localhost:5173/b3bfadfa-39bd-4ed5-aba5-34275b6f168c",
@@ -59,7 +59,7 @@ function App() {
          <Route path='/profile'                 element={<Profile />} />
          <Route path='/feed'                    element={<FeedPage />} />
          <Route path='/cover'                   element={<ImageCanvasEditor />} />
-         <Route path='/render'                  element={<ImageCanvasRenderer data={data2}/>} />
+         {/* <Route path='/render'                  element={<ImageCanvasRenderer data={data2}/>} /> */}
         
       </Routes>
     </div>
