@@ -15,8 +15,12 @@ export function ImageCanvasEditor() {
   const lastDistance = useRef(null);
   const isPinching = useRef(false);
 
+  // ---------------- DELETE ----------------
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const holdTimer = useRef(null);
+
   // ---------------- EDIT MODE ----------------
-  const mode = useRef("idle"); // draw | drag | resize
+  const mode = useRef("idle");
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
   const pointerId = useRef(null);
@@ -100,7 +104,7 @@ export function ImageCanvasEditor() {
 
   // ---------------- CREATE RECT ----------------
   const onPointerDownCanvas = (e) => {
-    if (isPinching.current) return; // 🚫 IMPORTANT
+    if (isPinching.current) return;
 
     if (e.target.dataset.type) return;
     if (!image) return;
@@ -136,7 +140,7 @@ export function ImageCanvasEditor() {
 
   // ---------------- MOVE ----------------
   const onPointerMove = (e) => {
-    if (isPinching.current) return; // 🚫 BLOCK EVERYTHING DURING ZOOM
+    if (isPinching.current) return;
 
     if (pointerId.current !== e.pointerId) return;
 
@@ -195,7 +199,7 @@ export function ImageCanvasEditor() {
     );
   };
 
-  // ---------------- DRAG ----------------
+  // ---------------- DRAG + HOLD DELETE ----------------
   const startDrag = (e, r) => {
     if (isPinching.current) return;
 
@@ -216,6 +220,15 @@ export function ImageCanvasEditor() {
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {}
+
+    // ---------------- HOLD TO DELETE ----------------
+    holdTimer.current = setTimeout(() => {
+      setDeleteTarget(r);
+    }, 600);
+  };
+
+  const stopHold = () => {
+    clearTimeout(holdTimer.current);
   };
 
   // ---------------- RESIZE ----------------
@@ -232,6 +245,12 @@ export function ImageCanvasEditor() {
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {}
+  };
+
+  // ---------------- DELETE ----------------
+  const deleteRect = (id) => {
+    setRects((prev) => prev.filter((r) => r.id !== id));
+    setActiveId(null);
   };
 
   // ---------------- INPUT UPDATE ----------------
@@ -289,6 +308,8 @@ export function ImageCanvasEditor() {
             key={r.id}
             data-type="box"
             onPointerDown={(e) => startDrag(e, r)}
+            onPointerUp={stopHold}
+            onPointerLeave={stopHold}
             style={{
               position: "absolute",
               left: `${r.x}%`,
@@ -336,8 +357,6 @@ export function ImageCanvasEditor() {
             style={{
               padding: 10,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               gap: "10px",
               border:
                 r.id === activeId
@@ -347,15 +366,12 @@ export function ImageCanvasEditor() {
             }}
           >
             <input
-              placeholder="Field 1"
               value={r.field1}
               onChange={(e) =>
                 updateField(r.id, "field1", e.target.value)
               }
             />
-
             <input
-              placeholder="Field 2"
               value={r.field2}
               onChange={(e) =>
                 updateField(r.id, "field2", e.target.value)
@@ -370,6 +386,48 @@ export function ImageCanvasEditor() {
           </button>
         )}
       </div>
+
+      {/* DELETE POPUP */}
+      {deleteTarget && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#111",
+              padding: 20,
+              borderRadius: 10,
+              color: "white",
+              textAlign: "center",
+            }}
+          >
+            <p>Delete this box?</p>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button
+                onClick={() => {
+                  deleteRect(deleteTarget.id);
+                  setDeleteTarget(null);
+                }}
+              >
+                Yes
+              </button>
+
+              <button onClick={() => setDeleteTarget(null)}>
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
