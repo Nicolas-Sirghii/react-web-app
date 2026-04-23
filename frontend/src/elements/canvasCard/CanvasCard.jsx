@@ -7,7 +7,6 @@ export function ImageCanvasEditor() {
   const [image, setImage] = useState(null);
   const [ratio, setRatio] = useState(1);
 
-  // REAL IMAGE BOUNDS (IMPORTANT FIX)
   const imageBounds = useRef({
     width: 0,
     height: 0,
@@ -21,25 +20,26 @@ export function ImageCanvasEditor() {
   const mode = useRef("idle");
   const pointerId = useRef(null);
 
-  // ---------------- POINTERS ----------------
+  // ---------------- POINTER TRACKING ----------------
   const pointers = useRef(new Map());
 
-  // ---------------- GESTURE ----------------
-  const gesture = useRef({
-    active: false,
-    startDistance: 0,
-    startScale: 1,
-    startMid: { x: 0, y: 0 },
-    startTransform: { x: 0, y: 0 },
-  });
-
+  // ---------------- TRANSFORM ----------------
   const [transform, setTransform] = useState({
     scale: 1,
     x: 0,
     y: 0,
   });
 
-  // ---------------- TEMP STATE ----------------
+  // ---------------- GESTURE STATE ----------------
+  const gesture = useRef({
+    active: false,
+    startDistance: 0,
+    startScale: 1,
+    startTransform: { x: 0, y: 0 },
+    anchorWorld: { x: 0, y: 0 },
+  });
+
+  // ---------------- TEMP ----------------
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
 
@@ -81,13 +81,13 @@ export function ImageCanvasEditor() {
   const clamp = (v, min, max) =>
     Math.max(min, Math.min(max, v));
 
-  // ---------------- WORLD SPACE ----------------
-  const getWorldPoint = (e) => {
+  // ---------------- WORLD CONVERSION ----------------
+  const worldFromScreen = (x, y) => {
     const rect = containerRef.current.getBoundingClientRect();
 
     return {
-      x: (e.clientX - rect.left - transform.x) / transform.scale,
-      y: (e.clientY - rect.top - transform.y) / transform.scale,
+      x: (x - rect.left - transform.x) / transform.scale,
+      y: (y - rect.top - transform.y) / transform.scale,
     };
   };
 
@@ -109,37 +109,34 @@ export function ImageCanvasEditor() {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // 👉 PINCH START
+    // ---------------- PINCH START ----------------
     if (pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
+      const mid = midpoint(p1, p2);
 
       gesture.current.active = true;
       gesture.current.startDistance = distance(p1, p2);
-      gesture.current.startMid = midpoint(p1, p2);
       gesture.current.startScale = transform.scale;
       gesture.current.startTransform = { ...transform };
+      gesture.current.anchorWorld = worldFromScreen(mid.x, mid.y);
 
       mode.current = "gesture";
       setActiveId(null);
       return;
     }
 
-    // 👉 BLOCK multi-touch drawing
     if (pointers.current.size > 1) return;
-
     if (!image) return;
 
-    const { x, y } = getWorldPoint(e);
+    const { x, y } = worldFromScreen(e.clientX, e.clientY);
 
-    // 🚨 IMPORTANT: BLOCK DRAW OUTSIDE IMAGE
+    // block drawing outside image
     if (
       x < 0 ||
       y < 0 ||
       x > imageBounds.current.width ||
       y > imageBounds.current.height
-    ) {
-      return;
-    }
+    ) return;
 
     start.current = { x, y };
 
@@ -163,91 +160,99 @@ export function ImageCanvasEditor() {
     pointerId.current = e.pointerId;
   };
 
-  // ---------------- POINTER MOVE ----------------
+  // ---------------- POINTER MOVE (CORE FIX HERE) ----------------
   const onPointerMove = (e) => {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // ---------------- GESTURE ----------------
+    // ---------------- PINCH ZOOM (FIXED ANCHOR SYSTEM) ----------------
     if (gesture.current.active && pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
+      const mid = midpoint(p1, p2);
 
       const newDistance = distance(p1, p2);
-      const newMid = midpoint(p1, p2);
 
-      const scaleFactor =
-        newDistance / gesture.current.startDistance;
+      const scale =
+        gesture.current.startScale *
+        (newDistance / gesture.current.startDistance);
+
+      const rect = containerRef.current.getBoundingClientRect();
+
+      // where anchor should be on screen after transform
+      const anchorScreenX =
+        gesture.current.anchorWorld.x * scale +
+        gesture.current.startTransform.x;
+
+      const anchorScreenY =
+        gesture.current.anchorWorld.y * scale +
+        gesture.current.startTransform.y;
+
+      const dx = mid.x - anchorScreenX;
+      const dy = mid.y - anchorScreenY;
 
       setTransform({
-        scale: gesture.current.startScale * scaleFactor,
-        x:
-          gesture.current.startTransform.x +
-          (newMid.x - gesture.current.startMid.x),
-        y:
-          gesture.current.startTransform.y +
-          (newMid.y - gesture.current.startMid.y),
+        scale,
+        x: gesture.current.startTransform.x + dx,
+        y: gesture.current.startTransform.y + dy,
       });
 
       return;
     }
 
+    // ---------------- EDIT MODE ----------------
     if (pointerId.current !== e.pointerId) return;
 
-    const { x, y } = getWorldPoint(e);
+    const { x, y } = worldFromScreen(e.clientX, e.clientY);
 
     setRects((prev) =>
       prev.map((r) => {
         if (r.id !== activeId) return r;
 
-        // ---------------- DRAW (CLAMPED) ----------------
+        // DRAW
         if (mode.current === "draw") {
-          const x1 = clamp(x, 0, imageBounds.current.width);
-          const y1 = clamp(y, 0, imageBounds.current.height);
-
           return {
             ...r,
-            x: Math.min(x1, start.current.x),
-            y: Math.min(y1, start.current.y),
-            width: Math.abs(x1 - start.current.x),
-            height: Math.abs(y1 - start.current.y),
+            x: Math.min(x, start.current.x),
+            y: Math.min(y, start.current.y),
+            width: Math.abs(x - start.current.x),
+            height: Math.abs(y - start.current.y),
           };
         }
 
-        // ---------------- DRAG (CLAMPED) ----------------
+        // DRAG (clamped)
         if (mode.current === "drag") {
-          const newX = clamp(
-            x - offset.current.x,
-            0,
-            imageBounds.current.width - r.width
-          );
-
-          const newY = clamp(
-            y - offset.current.y,
-            0,
-            imageBounds.current.height - r.height
-          );
-
-          return { ...r, x: newX, y: newY };
-        }
-
-        // ---------------- RESIZE (CLAMPED) ----------------
-        if (mode.current === "resize") {
-          const newW = clamp(
-            x - r.x,
-            2,
-            imageBounds.current.width - r.x
-          );
-
-          const newH = clamp(
-            y - r.y,
-            2,
-            imageBounds.current.height - r.y
-          );
+          const newX = x - offset.current.x;
+          const newY = y - offset.current.y;
 
           return {
             ...r,
-            width: newW,
-            height: newH,
+            x: clamp(
+              newX,
+              0,
+              imageBounds.current.width - r.width
+            ),
+            y: clamp(
+              newY,
+              0,
+              imageBounds.current.height - r.height
+            ),
+          };
+        }
+
+        // RESIZE (safe)
+        if (mode.current === "resize") {
+          return {
+            ...r,
+            width: clamp(
+              x - r.x,
+              2,
+              imageBounds.current.width - r.x
+            ),
+            height: clamp(
+              y - r.y,
+              2,
+              imageBounds.current.height - r.y
+            ),
           };
         }
 
@@ -279,7 +284,7 @@ export function ImageCanvasEditor() {
     setActiveId(r.id);
     mode.current = "drag";
 
-    const { x, y } = getWorldPoint(e);
+    const { x, y } = worldFromScreen(e.clientX, e.clientY);
 
     offset.current = {
       x: x - r.x,
@@ -387,7 +392,7 @@ export function ImageCanvasEditor() {
         </div>
       </div>
 
-      {/* UI (FIXED VISIBILITY ON MOBILE) */}
+      {/* UI OVERLAY (MOBILE SAFE) */}
       <div
         style={{
           position: "fixed",
