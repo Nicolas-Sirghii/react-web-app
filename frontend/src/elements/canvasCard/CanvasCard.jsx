@@ -1,39 +1,7 @@
-
-
-import React, { useRef, useState, useEffect } from "react";
-import "./canvas.css"
-
-
-
-
-
-  
-  
-    
-      
-
-
-
-
-
-
-
+import React, { useRef, useState } from "react";
+import "./canvas.css";
 
 export function ImageCanvasEditor() {
-
-  
- const [thick, setThick] = useState(false);
-
-  useEffect(() => {
-    if (thick) {
-      document.body.classList.add("thick-scroll");
-    } else {
-      document.body.classList.remove("thick-scroll");
-    }
-  }, [thick]);
-
-
-
   const containerRef = useRef(null);
 
   const [image, setImage] = useState(null);
@@ -42,7 +10,11 @@ export function ImageCanvasEditor() {
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
-  const mode = useRef("idle"); // draw | drag | resize
+  // 🔥 ZOOM STATE
+  const [scale, setScale] = useState(1);
+  const lastTouchDist = useRef(null);
+
+  const mode = useRef("idle");
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
   const pointerId = useRef(null);
@@ -77,8 +49,50 @@ export function ImageCanvasEditor() {
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
+  // ---------------- PINCH HELPERS ----------------
+  const getDistance = (t1, t2) => {
+    return Math.hypot(
+      t2.clientX - t1.clientX,
+      t2.clientY - t1.clientY
+    );
+  };
+
+  const onTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      lastTouchDist.current = getDistance(
+        e.touches[0],
+        e.touches[1]
+      );
+    }
+  };
+
+  const onTouchMove = (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+
+      const dist = getDistance(e.touches[0], e.touches[1]);
+
+      if (lastTouchDist.current) {
+        const delta = dist / lastTouchDist.current;
+
+        setScale((prev) =>
+          clamp(prev * delta, 0.5, 3)
+        );
+
+        lastTouchDist.current = dist;
+      }
+    }
+  };
+
+  const onTouchEnd = () => {
+    lastTouchDist.current = null;
+  };
+
   // ---------------- CREATE RECT ----------------
   const onPointerDownCanvas = (e) => {
+    // ❌ prevent drawing during pinch (touch)
+    if (e.pointerType === "touch") return;
+
     if (e.target.dataset.type) return;
     if (!image) return;
 
@@ -121,7 +135,6 @@ export function ImageCanvasEditor() {
       prev.map((r) => {
         if (r.id !== activeId) return r;
 
-        // ---------------- DRAW ----------------
         if (mode.current === "draw") {
           const width = Math.abs(mx - start.current.x);
           const height = Math.abs(my - start.current.y);
@@ -137,7 +150,6 @@ export function ImageCanvasEditor() {
           };
         }
 
-        // ---------------- DRAG (FIXED) ----------------
         if (mode.current === "drag") {
           const newX = mx - offset.current.x;
           const newY = my - offset.current.y;
@@ -149,7 +161,6 @@ export function ImageCanvasEditor() {
           };
         }
 
-        // ---------------- RESIZE (FIXED SAFE) ----------------
         if (mode.current === "resize") {
           return {
             ...r,
@@ -168,13 +179,12 @@ export function ImageCanvasEditor() {
     mode.current = "idle";
     pointerId.current = null;
 
-    // cleanup tiny invalid rectangles
     setRects((prev) =>
       prev.filter((r) => r.width > 1 && r.height > 1)
     );
   };
 
-  // ---------------- DRAG START ----------------
+  // ---------------- DRAG ----------------
   const startDrag = (e, r) => {
     e.stopPropagation();
 
@@ -195,7 +205,7 @@ export function ImageCanvasEditor() {
     } catch {}
   };
 
-  // ---------------- RESIZE START ----------------
+  // ---------------- RESIZE ----------------
   const startResize = (e, r) => {
     e.stopPropagation();
 
@@ -222,11 +232,7 @@ export function ImageCanvasEditor() {
   const handleSubmit = () => {
     console.log(
       JSON.stringify(
-        {
-          image,
-          ratio,
-          rects,
-        },
+        { image, ratio, rects },
         null,
         2
       )
@@ -235,9 +241,6 @@ export function ImageCanvasEditor() {
 
   return (
     <div>
-    <button onClick={() => setThick(prev => !prev)}>
-        Toggle Global Scrollbar
-      </button>
       <input type="file" onChange={handleImage} />
 
       {/* CANVAS */}
@@ -246,6 +249,9 @@ export function ImageCanvasEditor() {
         onPointerDown={onPointerDownCanvas}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
         style={{
           width: "100vw",
           aspectRatio: ratio,
@@ -253,6 +259,10 @@ export function ImageCanvasEditor() {
           overflow: "hidden",
           userSelect: "none",
           touchAction: "none",
+
+          transform: `scale(${scale})`,
+          transformOrigin: "center",
+
           backgroundImage: image ? `url(${image})` : "none",
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",
@@ -311,8 +321,6 @@ export function ImageCanvasEditor() {
             style={{
               padding: 10,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               gap: "10px",
               border:
                 r.id === activeId
@@ -322,15 +330,12 @@ export function ImageCanvasEditor() {
             }}
           >
             <input
-              placeholder="Field 1"
               value={r.field1}
               onChange={(e) =>
                 updateField(r.id, "field1", e.target.value)
               }
             />
-
             <input
-              placeholder="Field 2"
               value={r.field2}
               onChange={(e) =>
                 updateField(r.id, "field2", e.target.value)
