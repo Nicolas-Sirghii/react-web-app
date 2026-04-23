@@ -7,12 +7,12 @@ export function ImageCanvasEditor() {
   const [image, setImage] = useState(null);
   const [ratio, setRatio] = useState(1);
 
-  // ---------------- RECTANGLES ----------------
+  // ---------------- RECTANGLES (PIXEL SPACE) ----------------
   const [rects, setRects] = useState([]);
   const [activeId, setActiveId] = useState(null);
 
   // ---------------- EDIT MODE ----------------
-  const mode = useRef("idle"); // draw | drag | resize | idle
+  const mode = useRef("idle");
   const start = useRef({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
   const pointerId = useRef(null);
@@ -36,7 +36,7 @@ export function ImageCanvasEditor() {
 
   const createId = () => Date.now() + Math.random();
 
-  // ---------------- IMAGE ----------------
+  // ---------------- IMAGE LOAD ----------------
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -53,15 +53,7 @@ export function ImageCanvasEditor() {
   };
 
   // ---------------- HELPERS ----------------
-  const getPercent = (e) => {
-    const rect = containerRef.current.getBoundingClientRect();
-    return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    };
-  };
-
-  const getPoint = (p) => ({ x: p.clientX, y: p.clientY });
+  const getPoint = (e) => ({ x: e.clientX, y: e.clientY });
 
   const distance = (a, b) =>
     Math.hypot(a.x - b.x, a.y - b.y);
@@ -73,12 +65,22 @@ export function ImageCanvasEditor() {
 
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
+  // ---------------- WORLD COORDINATES (IMPORTANT FIX) ----------------
+  const getWorldPoint = (e) => {
+    const rect = containerRef.current.getBoundingClientRect();
+
+    return {
+      x: (e.clientX - rect.left - transform.x) / transform.scale,
+      y: (e.clientY - rect.top - transform.y) / transform.scale,
+    };
+  };
+
   // ---------------- POINTER DOWN ----------------
   const onPointerDown = (e) => {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // 👉 PINCH START (2 fingers)
+    // 👉 2 FINGERS = GESTURE MODE
     if (pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
 
@@ -93,10 +95,10 @@ export function ImageCanvasEditor() {
       return;
     }
 
-    // 👉 SINGLE FINGER (DRAW)
+    // 👉 SINGLE FINGER = DRAW
     if (!image) return;
 
-    const { x, y } = getPercent(e);
+    const { x, y } = getWorldPoint(e);
 
     start.current = { x, y };
 
@@ -125,7 +127,7 @@ export function ImageCanvasEditor() {
     const p = getPoint(e);
     pointers.current.set(e.pointerId, p);
 
-    // ---------------- GESTURE ----------------
+    // ---------------- GESTURE (ZOOM + PAN) ----------------
     if (gesture.current.active && pointers.current.size === 2) {
       const [p1, p2] = [...pointers.current.values()];
 
@@ -148,10 +150,10 @@ export function ImageCanvasEditor() {
       return;
     }
 
-    // ---------------- EDIT MODE ----------------
+    // ---------------- RECTANGLE EDITING ----------------
     if (pointerId.current !== e.pointerId) return;
 
-    const { x: mx, y: my } = getPercent(e);
+    const { x, y } = getWorldPoint(e);
 
     setRects((prev) =>
       prev.map((r) => {
@@ -161,22 +163,22 @@ export function ImageCanvasEditor() {
         if (mode.current === "draw") {
           return {
             ...r,
-            x: Math.min(mx, start.current.x),
-            y: Math.min(my, start.current.y),
-            width: Math.abs(mx - start.current.x),
-            height: Math.abs(my - start.current.y),
+            x: Math.min(x, start.current.x),
+            y: Math.min(y, start.current.y),
+            width: Math.abs(x - start.current.x),
+            height: Math.abs(y - start.current.y),
           };
         }
 
         // DRAG
         if (mode.current === "drag") {
-          const newX = mx - offset.current.x;
-          const newY = my - offset.current.y;
+          const newX = x - offset.current.x;
+          const newY = y - offset.current.y;
 
           return {
             ...r,
-            x: clamp(newX, 0, 100 - r.width),
-            y: clamp(newY, 0, 100 - r.height),
+            x: newX,
+            y: newY,
           };
         }
 
@@ -184,8 +186,8 @@ export function ImageCanvasEditor() {
         if (mode.current === "resize") {
           return {
             ...r,
-            width: clamp(mx - r.x, 2, 100 - r.x),
-            height: clamp(my - r.y, 2, 100 - r.y),
+            width: Math.max(2, x - r.x),
+            height: Math.max(2, y - r.y),
           };
         }
 
@@ -217,7 +219,7 @@ export function ImageCanvasEditor() {
     setActiveId(r.id);
     mode.current = "drag";
 
-    const { x, y } = getPercent(e);
+    const { x, y } = getWorldPoint(e);
 
     offset.current = {
       x: x - r.x,
@@ -227,7 +229,7 @@ export function ImageCanvasEditor() {
     pointerId.current = e.pointerId;
   };
 
-  // ---------------- RESIZE START ----------------
+  // ---------------- RESIZE ----------------
   const startResize = (e, r) => {
     e.stopPropagation();
 
@@ -273,15 +275,15 @@ export function ImageCanvasEditor() {
         onPointerUp={onPointerUp}
         style={{
           width: "100vw",
-          aspectRatio: ratio,
+          height: "100vh",
           position: "relative",
           overflow: "hidden",
-          userSelect: "none",
           touchAction: "none",
+          userSelect: "none",
           background: "#111",
         }}
       >
-        {/* TRANSFORM LAYER */}
+        {/* WORLD LAYER */}
         <div
           style={{
             width: "100%",
@@ -300,10 +302,10 @@ export function ImageCanvasEditor() {
               onPointerDown={(e) => startDrag(e, r)}
               style={{
                 position: "absolute",
-                left: `${r.x}%`,
-                top: `${r.y}%`,
-                width: `${r.width}%`,
-                height: `${r.height}%`,
+                left: r.x,
+                top: r.y,
+                width: r.width,
+                height: r.height,
                 background: "rgba(255,0,0,0.5)",
                 borderRadius: 10,
               }}
@@ -346,7 +348,6 @@ export function ImageCanvasEditor() {
           </div>
         ))}
 
-        {/* EXPORT BUTTON */}
         {rects.length > 0 && (
           <button onClick={handleSubmit}>
             Export Layout
